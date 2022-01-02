@@ -1,6 +1,8 @@
 {
-	"useTabs": true,
-	"singleQuote": true,
-	"trailingComma": "none",
-	"printWidth": 100
+  "pluginSearchDirs": ["."],
+  "printWidth": 100,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "arrowParens": "always",
+  "svelteBracketNewLine": false
 }
