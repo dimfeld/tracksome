@@ -1,6 +1,11 @@
+const defaultTheme = require('tailwindcss/defaultTheme');
 const plugin = require('tailwindcss/plugin');
+const colors = require('tailwindcss/colors');
+const formsPlugin = require('@tailwindcss/forms');
 
 let brightnessValues = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+
+const accent = colors.orange;
 
 const config = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
@@ -8,7 +13,12 @@ const config = {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+      },
       colors: {
+        accent,
+        daccent: Object.fromEntries(brightnessValues.map((c) => [c, `var(--color-daccent-${c})`])),
         dgray: Object.fromEntries(brightnessValues.map((c) => [c, `var(--color-dgray-${c})`])),
         dblack: `var(--color-dblack)`,
         dwhite: `var(--color-dwhite)`,
@@ -17,6 +27,7 @@ const config = {
   },
 
   plugins: [
+    formsPlugin,
     plugin(({ addBase, theme }) => {
       const mainElement = '#tracksome-top';
 
@@ -47,17 +58,20 @@ const config = {
       }
 
       let gray = generateLightDark('gray');
+      let accent = generateLightDark('accent');
 
       let lightColors = {
         '--color-dwhite': 'white',
         '--color-dblack': 'black',
         ...gray.light,
+        ...accent.light,
       };
 
       let darkColors = {
         '--color-dwhite': 'black',
         '--color-dblack': 'white',
         ...gray.dark,
+        ...accent.dark,
       };
 
       addBase({

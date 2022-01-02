@@ -2,3 +2,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  select {
+    @apply sm:text-sm dark:bg-gray-800 rounded-md focus:border-accent-500 focus:ring-accent-500 dark:border-gray-600;
+  }
+}
