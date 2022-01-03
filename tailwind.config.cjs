@@ -3,13 +3,16 @@ const plugin = require('tailwindcss/plugin');
 const colors = require('tailwindcss/colors');
 const formsPlugin = require('@tailwindcss/forms');
 
-let brightnessValues = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
-
+const brightnessValues = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
 const accent = colors.orange;
 
-const config = {
-  content: ['./src/**/*.{html,js,svelte,ts}'],
+const isSvench = Boolean(process.env.SVENCH);
 
+const baseContent = ['./src/**/*.{html,js,svelte,ts}'];
+const svenchContent = [...baseContent, './src/**/*.svench', './node_modules/svench/**/*.svelte'];
+
+const config = {
+  content: isSvench ? svenchContent : baseContent,
   darkMode: 'class',
   theme: {
     extend: {
@@ -29,7 +32,7 @@ const config = {
   plugins: [
     formsPlugin,
     plugin(({ addBase, theme }) => {
-      const mainElement = '#tracksome-top';
+      const mainElement = isSvench ? '.svench-body' : '#tracksome-top';
 
       function generateLightDark(colorSource) {
         let lightColorValues = brightnessValues.map((color) =>
