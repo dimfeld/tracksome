@@ -3,14 +3,61 @@
   import TrackableButton from './TrackableButton.svelte';
 </script>
 
-<View name="default">
-  <TrackableButton label="A Task" color="#ffeedd" />
+<View name="No Side Buttons">
+  <div class="w-48">
+    <TrackableButton label="A Task" color="#ffeedd" />
+  </div>
+</View>
+<View name="List Button">
+  <div class="w-48">
+    <TrackableButton label="A Task" color="#867234" count={1} />
+  </div>
+</View>
+
+<View name="Plus Button">
+  <div class="w-48">
+    <TrackableButton label="A Task" color="#b083ae" countable={true} count={10} plus={true} />
+  </div>
 </View>
 
 <View name="Side Buttons">
-  <TrackableButton label="A Task" color="#ffaaaa" plus={true} list={true} />
+  <div class="w-48">
+    <TrackableButton label="A Task" color="#ffaaaa" countable={true} count={1} plus={true} />
+  </div>
 </View>
 
 <View name="Dark Background">
-  <TrackableButton label="A Task" color="#112288" plus={true} list={true} />
+  <div class="w-48">
+    <TrackableButton label="A Task" color="#112288" plus={true} count={1} />
+  </div>
+</View>
+
+<View name="Middle Gray">
+  <div class="w-48">
+    <TrackableButton label="A Task" color="#787878" plus={true} />
+  </div>
+</View>
+
+<View name="Light Middle Gray">
+  <div class="w-48">
+    <TrackableButton label="A Task" color="#909090" plus={true} />
+  </div>
+</View>
+
+<View name="Dark Middle Gray">
+  <div class="w-48">
+    <TrackableButton label="A Task" color="#707070" />
+  </div>
+</View>
+
+<View name="White">
+  <div class="w-48">
+    <TrackableButton label="A Long Task Name" color="#FFFFFF" plus={true} />
+  </div>
+</View>
+
+<View name="Black">
+  <div class="w-48">
+    <TrackableButton label="A Task" color="#000000" plus={true} />
+  </div>
 </View>

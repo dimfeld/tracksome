@@ -4,54 +4,107 @@
 
   export let label: string;
   export let color: string;
+  export let countable = false;
+  export let count = 0;
 
   export let plus = false;
-  export let list = false;
 
   const dispatch = createEventDispatcher<{ 'click-list': void; 'click-plus': void; click: void }>();
 
+  function calculateContrastingLuminance(color: d3.LabColor) {
+    const MIN_DIFF = 50;
+    const MAX_DIFF = 90;
+
+    let l = color.l;
+    let output = 100 - l;
+    let contrast = Math.abs(l - output);
+    let hoverBgColor: d3.LabColor;
+    let textColor: d3.LabColor;
+    let hoverTextColor: d3.LabColor;
+    const k = Math.min(0.75, Math.max(contrast / 100, 0.25));
+    if (l < output) {
+      if (contrast < MIN_DIFF) {
+        output = l + MIN_DIFF;
+      } else if (contrast > MAX_DIFF) {
+        output = l + MAX_DIFF;
+      }
+      textColor = d3.lab(output, color.a, color.b);
+      hoverTextColor = textColor.brighter(k);
+      hoverBgColor = color.brighter(k);
+    } else {
+      if (contrast < MIN_DIFF) {
+        output = l - MIN_DIFF;
+      } else if (contrast > MAX_DIFF) {
+        output = l - MAX_DIFF;
+      }
+
+      textColor = d3.lab(output, color.a, color.b);
+      hoverTextColor = textColor.darker(k);
+      hoverBgColor = color.darker(k);
+    }
+
+    return {
+      textColor: textColor.rgb().toString(),
+      hoverTextColor: hoverTextColor.rgb().toString(),
+      hoverBgColor: hoverBgColor.rgb().toString(),
+    };
+  }
+
   $: labColor = d3.lab(color);
-  $: textLum = 100 - labColor.l;
-  $: textColor = d3.lab(textLum, labColor.a, labColor.b).rgb().toString();
-  // $: textColor = darkBg ? 'text-gray-300' : 'text-gray-900';
+  $: innerBorderColor =
+    labColor.l < 50 ? 'border-white border-opacity-30' : 'border-black border-opacity-20';
+  $: ({ textColor, hoverTextColor, hoverBgColor } = calculateContrastingLuminance(labColor));
+
+  // When not showing a button, we don't render it and instead expand the center button to include its space. This
+  // makes the hover effects look proper.
+  let centerButtonClasses: string;
+  $: if (plus) {
+    centerButtonClasses = 'px-4 rounded-l-full';
+  } else {
+    centerButtonClasses = 'pl-4 pr-14 rounded-full';
+  }
 </script>
 
 <div
-  class="flex rounded-full px-3 shadow-current drop-shadow-lg"
-  style="background-color:{color};color:{textColor}"
+  class="flex shadow-current drop-shadow-lg"
+  style="--normal-bg-color:{color};color:{textColor};--hover-text-color:{hoverTextColor};--hover-bg-color:{hoverBgColor}"
 >
-  <button
-    on:click={() => dispatch('click-list')}
-    class="w-8 pr-1 border-gray-300 border-opacity-50"
-    class:border-r={list}
-    disabled={!list}
-  >
-    {#if list}
-      <!-- Heroicons list -->
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 opacity-50"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-          clip-rule="evenodd"
-        />
-      </svg>
-    {/if}
+  <button class="py-2 flex-1 truncate flex {centerButtonClasses}" on:click>
+    <span class="w-4 mr-auto opacity-60"
+      >{#if count}
+        {#if countable}
+          {count}
+        {:else}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        {/if}
+      {/if}</span
+    >
+    <span class="flex-1 ml-4">
+      {label}
+    </span>
   </button>
-  <button class="py-2 px-4" on:click>{label}</button>
-  <button
-    on:click={() => dispatch('click-plus')}
-    class="w-8 pl-2 border-gray-300 border-opacity-50"
-    class:border-l={plus}
-  >
-    {#if plus}
+  {#if plus}
+    <button
+      on:click={() => dispatch('click-plus')}
+      class="w-10 pl-2 pr-2 rounded-r-full {innerBorderColor}"
+      class:border-l={plus}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 opacity-50"
+        class="h-5 w-5 opacity-60"
         viewBox="0 0 20 20"
         fill="currentColor"
       >
@@ -61,6 +114,17 @@
           clip-rule="evenodd"
         />
       </svg>
-    {/if}
-  </button>
+    </button>
+  {/if}
 </div>
+
+<style>
+  button {
+    background-color: var(--normal-bg-color);
+  }
+
+  button:hover {
+    background-color: var(--hover-bg-color);
+    color: var(--hover-text-color);
+  }
+</style>
