@@ -1,0 +1,16 @@
+<script>
+  import { View } from 'svench';
+  import TrackableButton from './TrackableButton.svelte';
+</script>
+
+<View name="default">
+  <TrackableButton label="A Task" color="#ffeedd" />
+</View>
+
+<View name="Side Buttons">
+  <TrackableButton label="A Task" color="#ffaaaa" plus={true} list={true} />
+</View>
+
+<View name="Dark Background">
+  <TrackableButton label="A Task" color="#112288" plus={true} list={true} />
+</View>
