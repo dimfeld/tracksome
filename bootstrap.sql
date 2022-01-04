@@ -1,6 +1,13 @@
+begin;
+
 create table users (
- user_id bigint primary key generated always as identity,
- name text not null
+  user_id bigint primary key generated always as identity,
+  name text not null,
+  email text,
+  avatar text,
+  enabled boolean not null default true,
+  created timestamptz not null default now(),
+  updated timestamptz not null default now()
 );
 
 create table logins (
@@ -10,6 +17,12 @@ create table logins (
   enabled boolean not null default true,
   user_id bigint not null references users,
   primary key (login_id, provider)
+);
+
+create table sessions (
+  session_id uuid primary key not null default gen_random_uuid(),
+  user_id bigint references users,
+  expires timestamptz
 );
 
 create table trackables (
@@ -153,3 +166,4 @@ create index on item_notes(user_id);
 create index on item_notes(item_id);
 create index on item_notes(trackable_note_id);
 
+commit;

@@ -6,13 +6,10 @@
     "target": "es2020",
     "isolatedModules": true,
     "resolveJsonModule": true,
-    /**
-			To have warnings/errors of the Svelte compiler at the correct position,
-			enable source maps by default.
-			*/
     "sourceMap": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "strict": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "allowJs": true,

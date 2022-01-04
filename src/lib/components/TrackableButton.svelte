@@ -21,13 +21,16 @@
     let hoverBgColor: d3.LabColor;
     let textColor: d3.LabColor;
     let hoverTextColor: d3.LabColor;
+
     const k = Math.min(0.75, Math.max(contrast / 100, 0.25));
+
     if (l < output) {
       if (contrast < MIN_DIFF) {
         output = l + MIN_DIFF;
       } else if (contrast > MAX_DIFF) {
         output = l + MAX_DIFF;
       }
+
       textColor = d3.lab(output, color.a, color.b);
       hoverTextColor = textColor.brighter(k);
       hoverBgColor = color.brighter(k);
@@ -92,7 +95,7 @@
         {/if}
       {/if}</span
     >
-    <span class="flex-1 ml-4">
+    <span class="flex-1 ml-4 truncate">
       {label}
     </span>
   </button>
