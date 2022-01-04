@@ -1,5 +1,4 @@
 import { db, pgp, skipIfAbsent } from './client';
-import { ColumnSet } from 'pg-promise';
 import { User } from '../user';
 
 export interface UserCreateOptions {
@@ -9,12 +8,14 @@ export interface UserCreateOptions {
   user: User;
 }
 
-const userColumns = new ColumnSet(
-  ['?user_id', 'name', 'email', 'avatar', { name: 'enabled', skip: skipIfAbsent }],
+const insertUserColumns = new pgp.helpers.ColumnSet(
+  ['name', 'email', 'avatar', { name: 'enabled', skip: skipIfAbsent }],
   { table: 'users' }
 );
 
-const loginColumns = new ColumnSet(
+const userColumns = insertUserColumns.extend(['?user_id']);
+
+const loginColumns = new pgp.helpers.ColumnSet(
   [
     '?login_id',
     '?provider',
@@ -27,11 +28,11 @@ const loginColumns = new ColumnSet(
 
 export async function create({ loginId, provider, user, secretHash }: UserCreateOptions) {
   let user_id = await db.tx(async (tx) => {
-    let addUserQuery = pgp.helpers.insert(user, userColumns);
+    let addUserQuery = pgp.helpers.insert({ ...user, enabled: true }, insertUserColumns);
     let [{ user_id }] = await tx.query(`${addUserQuery} RETURNING user_id`);
 
     let addLoginQuery = pgp.helpers.insert(
-      { login_id: loginId, provider, user_id, secret_hash: secretHash },
+      { login_id: loginId, provider, user_id, secret_hash: secretHash, enabled: true },
       loginColumns
     );
     await tx.query(addLoginQuery);
@@ -43,4 +44,18 @@ export async function create({ loginId, provider, user, secretHash }: UserCreate
     user_id,
     ...user,
   };
+}
+
+export async function get(userId: string): Promise<User> {
+  let [user] = await db.query(
+    `SELECT user_id, name, email, avatar FROM users WHERE user_id=$[userId]`,
+    { userId }
+  );
+  return user;
+}
+
+export function mustBeLoggedIn(locals: Record<string, string>) {
+  if (!locals.userId) {
+    throw new Error('Not logged in');
+  }
 }

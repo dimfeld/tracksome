@@ -22,6 +22,7 @@ create table logins (
 create table sessions (
   session_id uuid primary key not null default gen_random_uuid(),
   user_id bigint references users,
+  created timestamptz not null default now(),
   expires timestamptz
 );
 

@@ -1,6 +1,7 @@
-import * as cookie from 'cookie';
 import { User } from '../user';
 import * as sessionDb from '$lib/db/session';
+
+type UserDetails = Omit<User, 'user_id'> & { login_id: string };
 
 export interface OAuthConfig {
   name: string;
@@ -9,7 +10,7 @@ export interface OAuthConfig {
   clientId: string;
   clientSecret: string;
   userUrl: string;
-  extractUserDetails: (data: any) => User;
+  extractUserDetails: (data: any) => UserDetails;
 }
 
 export const config: Record<string, OAuthConfig> = {
@@ -17,11 +18,11 @@ export const config: Record<string, OAuthConfig> = {
     name: 'github',
     authURL: 'https://github.com/login/oauth/authorize',
     tokenURL: 'https://github.com/login/oauth/access_token',
-    clientId: import.meta.env.VITE_OAUTH_GITHUB_CLIENT_ID as string,
-    clientSecret: import.meta.env.VITE_OAUTH_GITHUB_CLIENT_SECRET as string,
+    clientId: process.env.OAUTH_GITHUB_CLIENT_ID as string,
+    clientSecret: process.env.OAUTH_GITHUB_CLIENT_SECRET as string,
     userUrl: 'https://api.github.com/user',
     extractUserDetails: (user) => ({
-      id: user.id,
+      login_id: user.id.toString(),
       name: user.name,
       email: user.email,
       avatar: user.avatar_url,
@@ -54,10 +55,12 @@ export async function handleLoginCode(
     method: 'POST',
     headers: {
       Accept: 'application/json',
+      'User-Agent': 'TrackSome',
     },
   }).then((r) => r.json());
 
-  let accessToken: string = tokenResponse.accessToken;
+  console.dir({ tokenResponse });
+  let accessToken: string = tokenResponse.access_token;
 
   const userData = await fetch(provider.userUrl, {
     headers: {
@@ -66,32 +69,27 @@ export async function handleLoginCode(
       'User-Agent': 'TrackSome',
     },
   }).then((r) => r.json());
+  console.dir({ userData, accessToken });
   const userDetails = provider.extractUserDetails(userData);
 
-  const { sessionId, expires, user } = await sessionDb.create({
-    loginId: userDetails.id,
+  const { user, cookie } = await sessionDb.create({
+    loginId: userDetails.login_id,
     provider: provider.name,
     user: userDetails,
     // For OAuth, login and register are the same thing so we just create the local account if it doesn't exist already.
     createIfMissing: true,
-  });
-
-  let sessionCookie = cookie.serialize('sid', sessionId, {
-    expires: new Date(expires),
-    path: '/',
-    httpOnly: true,
-    secure: !callbackUrl.host.startsWith('localhost'),
+    currentUrl: callbackUrl,
   });
 
   return {
     headers: {
-      'Set-Cookie': sessionCookie,
+      'Set-Cookie': cookie,
       'Content-Type': 'text/html; charset=utf-8',
     },
     body: `
-    <script>
+     <script>
        window.opener.postMessage({
-         user: ${JSON.stringify(user)}
+         success: true
        }, window.location.origin);
      </script>
     `,

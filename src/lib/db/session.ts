@@ -1,19 +1,35 @@
 import { db } from './client';
 import { User } from '../user';
+import * as cookie from 'cookie';
 import * as userDb from './user';
+import flru from 'flru';
+
+interface Session {
+  user_id: string;
+  expires: Date;
+}
+
+const sessionCache = flru<Session | null>(1000);
 
 // Default to 1 year
-const sessionExpirationMinutes = +(import.meta.env.VITE_SESSION_DURATION_MINUTES || '525960');
+const sessionExpirationMinutes = +(process.env.SESSION_DURATION_MINUTES || '525960');
 
 export interface SessionCreateOptions {
   loginId: string;
   provider: string;
   user?: User;
   createIfMissing: boolean;
+  currentUrl: URL;
 }
 
-export async function create({ loginId, provider, user, createIfMissing }: SessionCreateOptions) {
-  let existingUser = await db.oneOrNone(
+export async function create({
+  loginId,
+  provider,
+  user,
+  createIfMissing,
+  currentUrl,
+}: SessionCreateOptions) {
+  let existingUser: (User & { user_id: string }) | null = await db.oneOrNone(
     `SELECT user_id, name, email, avatar
       FROM logins
       JOIN users USING (user_id)
@@ -41,7 +57,7 @@ export async function create({ loginId, provider, user, createIfMissing }: Sessi
       .map((field) => `${field}=$[${field}]`);
 
     if (args.length) {
-      existingUser = await db.query(
+      let userUpdate = await db.query(
         `UPDATE users SET ${args.join(', ')}, updated=now()
         WHERE user_id=$[user_id]
         RETURNING user_id, name, email, avatar`,
@@ -50,18 +66,73 @@ export async function create({ loginId, provider, user, createIfMissing }: Sessi
           user_id: existingUser.user_id,
         }
       );
+
+      existingUser = userUpdate[0];
     }
   }
 
-  let [session] = await db.query(`INSERT INTO sessions
+  let [session] = await db.query(
+    `INSERT INTO sessions
     (user_id, expires)
     VALUES
     ($[userId], now() + interval '${sessionExpirationMinutes} minutes')
-    RETURNING *`);
+    RETURNING *`,
+    { userId: existingUser!.user_id }
+  );
 
+  let sessionCookie = cookie.serialize('sid', session.session_id, {
+    expires: new Date(session.expires),
+    path: '/',
+    httpOnly: true,
+    secure: !currentUrl.host.startsWith('localhost'),
+  });
+
+  sessionCache.set(session.session_id, {
+    user_id: existingUser!.user_id,
+    expires: session.expires,
+  });
+
+  let { user_id: _user_id, ...userOutput } = existingUser!;
   return {
     sessionId: session.session_id,
+    cookie: sessionCookie,
     expires: session.expires,
-    user: existingUser,
+    user: userOutput,
   };
+}
+
+export async function destroy(sid: string) {
+  if (sid) {
+    if (sessionCache.has(sid)) {
+      sessionCache.set(sid, null);
+    }
+    await db.query(`DELETE FROM sessions WHERE session_id=$[sid]`, { sid });
+  }
+}
+
+export async function read(sid: string | null): Promise<string | null> {
+  if (!sid) {
+    return null;
+  }
+
+  let cached = sessionCache.get(sid);
+  if (cached) {
+    if (cached.expires.valueOf() < Date.now()) {
+      sessionCache.set(sid, null);
+      return null;
+    } else {
+      return cached.user_id;
+    }
+  }
+
+  let [result] = await db.query(
+    `SELECT user_id, expires FROM sessions WHERE sid=$[sid] AND expires > now()`,
+    { sid }
+  );
+
+  if (result) {
+    sessionCache.set(sid, result);
+  }
+
+  return result?.user_id ?? null;
 }
