@@ -6,6 +6,11 @@ const config = {
   preprocess: [preprocess({})],
   disableDependencyReinclusion: ['svench'],
   kit: {
+    vite: () => ({
+      ssr: {
+        noExternal: ['sorters'],
+      },
+    }),
     adapter: adapter(),
   },
 };

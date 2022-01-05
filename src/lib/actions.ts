@@ -16,7 +16,9 @@ export function submit(node: HTMLFormElement, { onSubmit, onResponse }: SubmitAc
     const response = await fetch(node.action, {
       method: node.method,
       body,
-      headers: { accept: 'application/json' },
+      headers: {
+        accept: 'application/json',
+      },
     });
 
     onResponse?.(response);

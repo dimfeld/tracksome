@@ -9,8 +9,16 @@ export const get: RequestHandler<unknown, Trackable[]> = async ({ locals }) => {
   };
 };
 
-export const post: RequestHandler<Trackable, Trackable> = async ({ locals, body }) => {
-  let result = await addTrackable(locals.userId, body);
+export const post: RequestHandler<FormData, Trackable> = async ({ locals, body }) => {
+  let item: Omit<Trackable, 'trackable_id'> = {
+    name: body.get('name'),
+    sort: +body.get('sort'),
+    color: body.get('color'),
+    enabled: body.get('enabled') === 'true',
+    multiple_per_day: body.get('multiple_per_day') === 'true',
+  };
+
+  let result = await addTrackable(locals.userId, item);
   return {
     body: result,
   };

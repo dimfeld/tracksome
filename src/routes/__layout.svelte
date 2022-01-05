@@ -22,7 +22,9 @@
   import '../app.css';
   import { writable } from 'svelte/store';
   import { createDarkStore, cssDarkModePreference } from '$lib/styles';
+  import { loadingStore } from '$lib/loader_status';
   import { createAppContext } from '$lib/context';
+  import NavBar from './_NavBar.svelte';
 
   let userProp: User | null;
   export { userProp as user };
@@ -30,7 +32,8 @@
   let user = writable<User | null>(userProp);
   $: $user = userProp;
 
-  createAppContext({ user });
+  let loading = loadingStore();
+  createAppContext({ user, loading });
 
   let darkModeStore = createDarkStore();
   $: darkMode = $darkModeStore ?? cssDarkModePreference();
@@ -40,18 +43,8 @@
   <div
     class="h-screen overflow-y-auto overflow-x-hidden bg-dgray-50 text-gray-900 dark:text-gray-100"
   >
-    <nav class="flex flex-row p-2 bg-dgray-200">
-      TrackSome
-      <div class="ml-auto">
-        <select bind:value={$darkModeStore}>
-          <option value={true}>Dark</option>
-          <option value={false}>Light</option>
-          <option value={null}>System</option>
-        </select>
-      </div>
-    </nav>
+    <NavBar {darkModeStore} />
     <main>
-      <pre>User: {JSON.stringify($user)}</pre>
       <slot />
     </main>
   </div>
