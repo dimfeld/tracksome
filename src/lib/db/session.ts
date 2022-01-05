@@ -125,8 +125,8 @@ export async function read(sid: string | null): Promise<string | null> {
     }
   }
 
-  let [result] = await db.query(
-    `SELECT user_id, expires FROM sessions WHERE sid=$[sid] AND expires > now()`,
+  let result = await db.oneOrNone(
+    `SELECT user_id, expires FROM sessions WHERE session_id=$[sid] AND expires > now()`,
     { sid }
   );
 

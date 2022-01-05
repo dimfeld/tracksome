@@ -1,4 +1,5 @@
 import { db, pgp, skipIfAbsent } from './client';
+import { TracksomeLocals } from '$lib/types';
 import { User } from '../user';
 
 export interface UserCreateOptions {
@@ -54,7 +55,7 @@ export async function get(userId: string): Promise<User> {
   return user;
 }
 
-export function mustBeLoggedIn(locals: Record<string, string>) {
+export function mustBeLoggedIn(locals: TracksomeLocals) {
   if (!locals.userId) {
     throw new Error('Not logged in');
   }
