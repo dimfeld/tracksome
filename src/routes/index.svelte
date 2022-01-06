@@ -2,10 +2,15 @@
   import type { Load } from '@sveltejs/kit';
 
   export const load: Load = async ({ fetch }) => {
-    let trackables = await fetch('/trackables').then((r) => r.json());
+    let [trackables, counts] = await Promise.all([
+      fetch('/trackables').then((r) => r.json()),
+      fetch('/items?date=today').then((r) => r.json()),
+    ]);
+
     return {
       props: {
         trackables,
+        counts,
       },
     };
   };
@@ -16,6 +21,7 @@
   import Switch from '$lib/components/Switch.svelte';
   import TrackableButton from '$lib/components/TrackableButton.svelte';
   import { Trackable } from '$lib/trackable';
+  import { Item } from '$lib/items';
   import { submit } from '$lib/actions';
   import sorter from 'sorters';
   import { appContext } from '$lib/context';
@@ -23,11 +29,12 @@
   import Button from '$lib/components/Button.svelte';
 
   export let trackables: Trackable[];
+  export let counts: Item[];
 
   let { loading, toasts } = appContext();
 
-  function onSubmit(data: FormData) {
-    if (!data.get('name')) {
+  function onSubmit(data: FormData | null) {
+    if (!data || !data.get('name')) {
       return false;
     }
 

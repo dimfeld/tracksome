@@ -3,6 +3,8 @@ import * as session from '$lib/db/session';
 import { Handle } from '@sveltejs/kit';
 import { GetSession, ServerRequest } from '@sveltejs/kit/types/hooks';
 import { randomColor } from '$lib/colors';
+import { TracksomeLocals } from '$lib/types';
+import { Theme } from '$lib/styles';
 
 function requireAuthed(request: ServerRequest) {
   return request.url.pathname !== '/user' || request.method !== 'GET';
@@ -24,11 +26,12 @@ function csrfCheck(request: ServerRequest): boolean {
   return originUrl.origin === request.url.origin;
 }
 
-export const handle: Handle = async function ({ request, resolve }) {
-  request.locals.cookies = cookie.parse(request.headers.cookie || '');
-  request.locals.userId = await session.read(request.locals.cookies.sid);
-  request.locals.theme = request.locals.cookies.theme;
-  request.locals.defaultDarkMode = request.locals.cookies.defaultDarkMode === 'true';
+export const handle: Handle<TracksomeLocals> = async function ({ request, resolve }) {
+  let cookies = cookie.parse(request.headers.cookie || '');
+  request.locals.userId = await session.read(cookies.sid);
+  request.locals.theme = cookies.theme as Theme;
+  request.locals.defaultDarkMode = cookies.defaultDarkMode === 'true';
+  request.locals.timezoneOffset = +cookies.timezoneOffset || 0;
 
   if (requireAuthed(request) && !request.locals.userId) {
     return {
@@ -49,10 +52,11 @@ export const handle: Handle = async function ({ request, resolve }) {
   return resolve(request);
 };
 
-export const getSession: GetSession = (request) => {
+export const getSession: GetSession<TracksomeLocals> = (request) => {
   return {
     theme: request.locals.theme,
     defaultDarkMode: request.locals.defaultDarkMode,
+    timezoneOffset: request.locals.timezoneOffset,
     randomColor: randomColor(),
   };
 };

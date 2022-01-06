@@ -5,7 +5,7 @@ import * as userDb from './user';
 import flru from 'flru';
 
 interface Session {
-  user_id: string;
+  user_id: number;
   expires: Date;
 }
 
@@ -110,7 +110,7 @@ export async function destroy(sid: string) {
   }
 }
 
-export async function read(sid: string | null): Promise<string | null> {
+export async function read(sid: string | null): Promise<number | null> {
   if (!sid) {
     return null;
   }

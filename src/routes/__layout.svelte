@@ -27,6 +27,7 @@
   import NavBar from './_NavBar.svelte';
   import { SvelteToast } from '@zerodevx/svelte-toast';
   import { toastStore } from '$lib/toast';
+  import { onMount } from 'svelte';
 
   let userProp: User | null;
   export { userProp as user };
@@ -45,6 +46,12 @@
     reversed: true,
     intro: { y: 100 },
   };
+
+  onMount(() => {
+    let d = new Date();
+    // Record timezone offset so that server-side queries can adjust appropriately.
+    document.cookie = `timezoneOffset=${d.getTimezoneOffset()};max-age=31536000`;
+  });
 </script>
 
 <div id="tracksome-top" class:dark={$darkMode}>

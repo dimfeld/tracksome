@@ -1,9 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { contrastingColor } from '$lib/colors';
+  import { submit } from '$lib/actions';
   import * as d3 from 'd3';
+  import { invalidate } from '$app/navigation';
 
   export let label: string;
+  export let trackable_id: number;
   export let color: string;
   export let countable = false;
   export let count = 0;
@@ -24,6 +27,18 @@
     centerButtonClasses = 'px-4 rounded-l-full';
   } else {
     centerButtonClasses = 'pl-4 pr-14 rounded-full';
+  }
+
+  function newItemSubmit() {
+    count++;
+  }
+
+  function newItemResponse(res: Response) {
+    if (res.ok) {
+      invalidate('/items');
+    } else {
+      count--;
+    }
   }
 </script>
 
@@ -59,24 +74,27 @@
     </span>
   </button>
   {#if plus}
-    <button
-      on:click={() => dispatch('click-plus')}
-      class="w-10 pl-2 pr-2 rounded-r-full {innerBorderColor}"
-      class:border-l={plus}
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 opacity-60"
-        viewBox="0 0 20 20"
-        fill="currentColor"
+    <form method="POST" action="/items" use:submit={{ onResponse: newItemResponse }}>
+      <input type="hidden" name="trackable_id" value={trackable_id} />
+      <button
+        on:click={() => dispatch('click-plus')}
+        class="w-10 pl-2 pr-2 rounded-r-full {innerBorderColor}"
+        class:border-l={plus}
       >
-        <path
-          fill-rule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
-          clip-rule="evenodd"
-        />
-      </svg>
-    </button>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 opacity-60"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </button>
+    </form>
   {/if}
 </div>
 
