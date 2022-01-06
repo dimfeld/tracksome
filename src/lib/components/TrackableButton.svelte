@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { contrastingColor } from '$lib/colors';
   import * as d3 from 'd3';
 
   export let label: string;
@@ -11,52 +12,10 @@
 
   const dispatch = createEventDispatcher<{ 'click-list': void; 'click-plus': void; click: void }>();
 
-  function calculateContrastingLuminance(color: d3.LabColor) {
-    const MIN_DIFF = 50;
-    const MAX_DIFF = 90;
-
-    let l = color.l;
-    let output = 100 - l;
-    let contrast = Math.abs(l - output);
-    let hoverBgColor: d3.LabColor;
-    let textColor: d3.LabColor;
-    let hoverTextColor: d3.LabColor;
-
-    const k = Math.min(0.75, Math.max(contrast / 100, 0.25));
-
-    if (l < output) {
-      if (contrast < MIN_DIFF) {
-        output = l + MIN_DIFF;
-      } else if (contrast > MAX_DIFF) {
-        output = l + MAX_DIFF;
-      }
-
-      textColor = d3.lab(output, color.a, color.b);
-      hoverTextColor = textColor.brighter(k);
-      hoverBgColor = color.brighter(k);
-    } else {
-      if (contrast < MIN_DIFF) {
-        output = l - MIN_DIFF;
-      } else if (contrast > MAX_DIFF) {
-        output = l - MAX_DIFF;
-      }
-
-      textColor = d3.lab(output, color.a, color.b);
-      hoverTextColor = textColor.darker(k);
-      hoverBgColor = color.darker(k);
-    }
-
-    return {
-      textColor: textColor.rgb().toString(),
-      hoverTextColor: hoverTextColor.rgb().toString(),
-      hoverBgColor: hoverBgColor.rgb().toString(),
-    };
-  }
-
   $: labColor = d3.lab(color);
   $: innerBorderColor =
     labColor.l < 50 ? 'border-white border-opacity-30' : 'border-black border-opacity-20';
-  $: ({ textColor, hoverTextColor, hoverBgColor } = calculateContrastingLuminance(labColor));
+  $: ({ textColor, hoverTextColor, hoverBgColor } = contrastingColor(labColor));
 
   // When not showing a button, we don't render it and instead expand the center button to include its space. This
   // makes the hover effects look proper.

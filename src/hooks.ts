@@ -2,6 +2,7 @@ import * as cookie from 'cookie';
 import * as session from '$lib/db/session';
 import { Handle } from '@sveltejs/kit';
 import { GetSession, ServerRequest } from '@sveltejs/kit/types/hooks';
+import { randomColor } from '$lib/colors';
 
 function requireAuthed(request: ServerRequest) {
   return request.url.pathname !== '/user' || request.method !== 'GET';
@@ -52,5 +53,6 @@ export const getSession: GetSession = (request) => {
   return {
     theme: request.locals.theme,
     defaultDarkMode: request.locals.defaultDarkMode,
+    randomColor: randomColor(),
   };
 };

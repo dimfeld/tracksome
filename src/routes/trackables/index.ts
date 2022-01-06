@@ -10,7 +10,6 @@ export const get: RequestHandler<unknown, Trackable[]> = async ({ locals }) => {
 };
 
 export const post: RequestHandler<FormData, Trackable> = async ({ locals, body }) => {
-  console.dir(body);
   let item: Omit<Trackable, 'trackable_id'> = {
     name: body.get('name'),
     sort: +body.get('sort'),

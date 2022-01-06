@@ -1,6 +1,6 @@
 <script lang="ts">
   import { appContext } from '$lib/context';
-  import type { DarkModeStore } from '$lib/styles';
+  import { DarkModeStore, Theme } from '$lib/styles';
 
   export let darkModeStore: DarkModeStore;
 
@@ -30,9 +30,9 @@
       {/if}
     </button>
     <select class="ml-2 text-xs h-8" bind:value={$darkModeStore}>
-      <option value={true}>Dark</option>
-      <option value={false}>Light</option>
-      <option value={null}>System</option>
+      <option value={Theme.Dark}>Dark</option>
+      <option value={Theme.Light}>Light</option>
+      <option value={Theme.System}>System</option>
     </select>
   </div>
 </nav>

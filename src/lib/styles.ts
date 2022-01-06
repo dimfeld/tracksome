@@ -1,30 +1,35 @@
-import { getContext, setContext } from 'svelte';
 import { derived, Readable, writable, Writable } from 'svelte/store';
 import { get } from 'svelte/store';
 import { session } from '$app/stores';
 import { browser } from '$app/env';
 
-export interface DarkModeStore extends Writable<boolean | null> {
+export enum Theme {
+  Dark = 'dark',
+  Light = 'light',
+  System = 'system',
+}
+
+export interface DarkModeStore extends Writable<Theme> {
   resolved(): ResolvedDarkModeStore;
 }
 export type ResolvedDarkModeStore = Readable<boolean>;
 
 export function createDarkStore(): DarkModeStore {
-  let initialDarkMode: boolean | null = null;
+  let initialDarkMode: Theme = Theme.System;
 
   if (browser) {
+    // Save this so that future SSR runs can render properly from the start, if the user hasn't
+    // selected a preference.
     document.cookie = `defaultDarkMode=${cssDarkModePreference()};max-age=31536000`;
   }
 
   if (browser && 'theme' in window.localStorage) {
-    initialDarkMode = window.localStorage.theme === 'true';
+    initialDarkMode = window.localStorage.theme;
   } else {
     let sess = get(session);
-    let { theme, defaultDarkMode } = sess;
-    if (theme === 'true' || theme === 'false') {
+    let { theme } = sess;
+    if (theme) {
       initialDarkMode = theme;
-    } else if (browser) {
-      return defaultDarkMode ?? false;
     }
   }
 
@@ -33,21 +38,22 @@ export function createDarkStore(): DarkModeStore {
   let s = {
     ...darkModeStore,
     resolved() {
-      return derived(darkModeStore, (d) => d ?? cssDarkModePreference());
+      return derived(darkModeStore, (d) => {
+        if (d === Theme.System) {
+          return cssDarkModePreference();
+        } else {
+          return d === Theme.Dark;
+        }
+      });
     },
-    set(value: boolean | null) {
+    set(value: Theme) {
       localStorage.theme = value;
       document.cookie = `theme=${value};max-age=31536000`;
       darkModeStore.set(value);
     },
   };
 
-  setContext('darkModeStore', s);
   return s;
-}
-
-export function darkModeStore() {
-  return getContext<DarkModeStore>('darkModeStore');
 }
 
 export function cssDarkModePreference() {
