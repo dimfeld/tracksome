@@ -1,7 +1,7 @@
 import * as cookie from 'cookie';
 import * as session from '$lib/db/session';
 import { Handle } from '@sveltejs/kit';
-import { ServerRequest } from '@sveltejs/kit/types/hooks';
+import { GetSession, ServerRequest } from '@sveltejs/kit/types/hooks';
 
 function requireAuthed(request: ServerRequest) {
   return request.url.pathname !== '/user' || request.method !== 'GET';
@@ -26,6 +26,8 @@ function csrfCheck(request: ServerRequest): boolean {
 export const handle: Handle = async function ({ request, resolve }) {
   request.locals.cookies = cookie.parse(request.headers.cookie || '');
   request.locals.userId = await session.read(request.locals.cookies.sid);
+  request.locals.theme = request.locals.cookies.theme;
+  request.locals.defaultDarkMode = request.locals.cookies.defaultDarkMode === 'true';
 
   if (requireAuthed(request) && !request.locals.userId) {
     return {
@@ -44,4 +46,11 @@ export const handle: Handle = async function ({ request, resolve }) {
   }
 
   return resolve(request);
+};
+
+export const getSession: GetSession = (request) => {
+  return {
+    theme: request.locals.theme,
+    defaultDarkMode: request.locals.defaultDarkMode,
+  };
 };
