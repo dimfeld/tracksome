@@ -10,12 +10,13 @@ export const get: RequestHandler<unknown, Trackable[]> = async ({ locals }) => {
 };
 
 export const post: RequestHandler<FormData, Trackable> = async ({ locals, body }) => {
+  console.dir(body);
   let item: Omit<Trackable, 'trackable_id'> = {
     name: body.get('name'),
     sort: +body.get('sort'),
     color: body.get('color'),
-    enabled: body.get('enabled') === 'true',
-    multiple_per_day: body.get('multiple_per_day') === 'true',
+    enabled: true,
+    multiple_per_day: Boolean(body.get('multiple_per_day')),
   };
 
   let result = await addTrackable(locals.userId, item);
