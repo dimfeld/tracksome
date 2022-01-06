@@ -25,6 +25,8 @@
   import { loadingStore } from '$lib/loader_status';
   import { createAppContext } from '$lib/context';
   import NavBar from './_NavBar.svelte';
+  import { SvelteToast } from '@zerodevx/svelte-toast';
+  import { toastStore } from '$lib/toast';
 
   let userProp: User | null;
   export { userProp as user };
@@ -32,14 +34,20 @@
   let user = writable<User | null>(userProp);
   $: $user = userProp;
 
-  let loading = loadingStore();
-  createAppContext({ user, loading });
+  const loading = loadingStore();
+  const darkModeStore = createDarkStore();
+  const darkMode = darkModeStore.resolved();
+  const toasts = toastStore(darkMode);
 
-  let darkModeStore = createDarkStore();
-  $: darkMode = $darkModeStore ?? cssDarkModePreference();
+  createAppContext({ user, loading, toasts });
+
+  const toastOptions = {
+    reversed: true,
+    intro: { y: 100 },
+  };
 </script>
 
-<div id="tracksome-top" class:dark={darkMode}>
+<div id="tracksome-top" class:dark={$darkMode}>
   <div
     class="h-screen overflow-y-auto overflow-x-hidden bg-dgray-50 text-gray-900 dark:text-gray-100"
   >
@@ -49,3 +57,5 @@
     </main>
   </div>
 </div>
+
+<SvelteToast options={toastOptions} />

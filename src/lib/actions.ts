@@ -1,5 +1,5 @@
 export interface SubmitActionOptions {
-  onSubmit?: (body: FormData | null) => void;
+  onSubmit?: (body: FormData | null) => boolean | undefined;
   onResponse?: (response: Response) => void;
 }
 
@@ -11,7 +11,10 @@ export function submit(node: HTMLFormElement, { onSubmit, onResponse }: SubmitAc
     event.preventDefault();
     const body = node.method === 'post' || node.method === 'put' ? new FormData(node) : null;
 
-    onSubmit?.(body);
+    let ok = onSubmit?.(body) ?? true;
+    if (!ok) {
+      return;
+    }
 
     const response = await fetch(node.action, {
       method: node.method,

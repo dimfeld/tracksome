@@ -14,7 +14,7 @@ function csrfCheck(request: ServerRequest): boolean {
     return true;
   }
 
-  let origin = request.headers.Origin || request.headers.Referer;
+  let origin = request.headers.origin || request.headers.referer;
   if (!origin || origin === 'null') {
     return false;
   }

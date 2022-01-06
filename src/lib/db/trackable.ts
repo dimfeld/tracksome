@@ -7,6 +7,7 @@ const baseColumns = new pgp.helpers.ColumnSet(
 );
 
 const fetchColumns = baseColumns.extend(['?trackable_id']);
+const insertColumns = baseColumns.extend(['?user_id']);
 const updateColumns = fetchColumns.extend(['?user_id']);
 
 export async function getAll(userId: number): Promise<Trackable[]> {
@@ -31,7 +32,7 @@ export function addTrackable(
   item: Omit<Trackable, 'trackable_id'>
 ): Promise<Trackable> {
   let insertQuery =
-    pgp.helpers.insert({ user_id: userId, ...item }, updateColumns) +
+    pgp.helpers.insert({ user_id: userId, ...item, enabled: true }, insertColumns) +
     ` RETURNING ${fetchColumns.names}`;
   return db.one(insertQuery);
 }
