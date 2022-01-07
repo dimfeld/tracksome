@@ -64,3 +64,7 @@ export function cssDarkModePreference() {
 
   return window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
+
+export function desktopScreen() {
+  return window.matchMedia('(min-width: 84rem)').matches;
+}

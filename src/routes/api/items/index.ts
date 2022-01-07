@@ -35,12 +35,9 @@ export const post: RequestHandler<Item | ReadOnlyFormData, Item> = async ({ loca
     modified: nowUtc,
   };
 
-  let item = await itemDb.addItem(locals.userId, newItem);
+  let item = await itemDb.addItemIfUnderDailyLimit(locals.userId, newItem);
 
   return {
-    status: 303,
-    headers: {
-      location: `/items/${item.item_id}`,
-    },
+    body: item,
   };
 };

@@ -6,3 +6,5 @@ export interface Item {
   added: string;
   modified: string;
 }
+
+export const todayItemsUrl = '/api/items?startDate=today&endDate=today';

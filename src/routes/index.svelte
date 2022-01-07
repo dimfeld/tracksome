@@ -2,15 +2,15 @@
   import type { Load } from '@sveltejs/kit';
 
   export const load: Load = async ({ fetch }) => {
-    let [trackables, counts] = await Promise.all([
+    let [trackables, items] = await Promise.all([
       fetch('/api/trackables').then((r) => r.json()),
-      fetch('/api/items?startDate=today&endDate=today').then((r) => r.json()),
+      fetch(todayItemsUrl).then((r) => r.json()),
     ]);
 
     return {
       props: {
         trackables,
-        counts,
+        items,
       },
     };
   };
@@ -21,15 +21,16 @@
   import Switch from '$lib/components/Switch.svelte';
   import TrackableButton from '$lib/components/TrackableButton.svelte';
   import { Trackable } from '$lib/trackable';
-  import { Item } from '$lib/items';
+  import { Item, todayItemsUrl } from '$lib/items';
   import { submit } from '$lib/form';
   import sorter from 'sorters';
   import { appContext } from '$lib/context';
   import { randomColor } from '$lib/colors';
   import Button from '$lib/components/Button.svelte';
+  import groupBy from 'just-group-by';
 
   export let trackables: Trackable[];
-  export let counts: Item[];
+  export let items: Item[];
 
   let { loading, toasts } = appContext();
 
@@ -61,15 +62,23 @@
     )
   );
 
+  $: itemsByTrackable = groupBy(items, (item) => item.trackable_id);
+  $: trackableRows = trackables.map((trackable) => {
+    return {
+      trackable,
+      items: itemsByTrackable[trackable.trackable_id] ?? [],
+    };
+  });
+
   $: maxSort = trackables[trackables.length - 1]?.sort ?? 0;
 
   $: newItemColor = $session.randomColor;
 </script>
 
 <ul class="p-2 w-full mx-auto max-w-md space-y-4">
-  {#each trackables as trackable (trackable.trackable_id)}
+  {#each trackableRows as { trackable, items } (trackable.trackable_id)}
     <li>
-      <TrackableButton {trackable} plus={trackable.multiple_per_day} />
+      <TrackableButton {trackable} {items} />
     </li>
   {/each}
 </ul>

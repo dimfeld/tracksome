@@ -3,13 +3,14 @@
   import { contrastingColor } from '$lib/colors';
   import { submit } from '$lib/form';
   import * as d3 from 'd3';
-  import { invalidate } from '$app/navigation';
+  import { goto, invalidate } from '$app/navigation';
   import { Trackable } from '$lib/trackable';
+  import { desktopScreen } from '$lib/styles';
+  import { Item, todayItemsUrl } from '$lib/items';
+  import TrackableButtonLabel from './_TrackableButtonLabel.svelte';
 
   export let trackable: Trackable;
-  export let count = 0;
-
-  export let plus = false;
+  export let items: Item[];
 
   const dispatch = createEventDispatcher<{ 'click-list': void; 'click-plus': void; click: void }>();
 
@@ -18,25 +19,40 @@
     labColor.l < 50 ? 'border-white border-opacity-30' : 'border-black border-opacity-20';
   $: ({ textColor, hoverTextColor, hoverBgColor } = contrastingColor(labColor));
 
+  let detailsPopupOpen = false;
+
+  // USe this once item editing is live.
+  // $: plus = trackable.multiple_per_day;
+
+  $: canAddNew = trackable.multiple_per_day || !items.length;
+
   // When not showing a button, we don't render it and instead expand the center button to include its space. This
   // makes the hover effects look proper.
-  let centerButtonClasses: string;
-  $: if (plus) {
-    centerButtonClasses = 'px-4 rounded-l-full';
-  } else {
-    centerButtonClasses = 'pl-4 pr-14 rounded-full';
-  }
+  $: centerButtonClasses =
+    'element py-2 flex-1 truncate' +
+    (canAddNew ? 'px-4 rounded-l-full' : 'pl-4 pr-14 rounded-full');
 
-  function newItemSubmit(data: FormData) {
-    data.set('date', new Date().toISOString());
-    count++;
+  function newItemSubmit(data: FormData | null) {
+    if (!trackable.multiple_per_day && items.length) {
+      return false;
+    }
+
+    if (data) {
+      data.set('date', new Date().toISOString());
+    }
   }
 
   function newItemResponse(res: Response) {
     if (res.ok) {
-      invalidate('/api/items?startDate=today&endDate=today');
+      invalidate(todayItemsUrl);
+    }
+  }
+
+  function showDetails(e: MouseEvent) {
+    if (desktopScreen()) {
+      detailsPopupOpen = true;
     } else {
-      count--;
+      goto((e.target as HTMLAnchorElement).href);
     }
   }
 </script>
@@ -45,39 +61,36 @@
   class="flex shadow-current drop-shadow-lg"
   style="--normal-bg-color:{trackable.color};color:{textColor};--hover-text-color:{hoverTextColor};--hover-bg-color:{hoverBgColor}"
 >
-  <button class="element py-2 flex-1 truncate flex {centerButtonClasses}" on:click>
-    <span class="w-4 mr-auto opacity-60"
-      >{#if count}
-        {#if trackable.multiple_per_day}
-          {count}
-        {:else}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-        {/if}
-      {/if}</span
+  {#if !items.length}
+    <form
+      class={centerButtonClasses}
+      method="POST"
+      action="/api/items"
+      use:submit={{
+        onSubmit: newItemSubmit,
+        onResponse: newItemResponse,
+      }}
     >
-    <span class="flex-1 ml-4 truncate">
-      {trackable.name}
-    </span>
-  </button>
-  {#if plus}
+      <input type="hidden" name="trackable_id" value={trackable.trackable_id} />
+      <button type="submit" class="flex w-full">
+        <TrackableButtonLabel {trackable} {items} />
+      </button>
+    </form>
+  {:else}
+    <a
+      class="{centerButtonClasses} flex w-full"
+      href="/trackables/{trackable.trackable_id}"
+      on:click|preventDefault={showDetails}
+    >
+      <TrackableButtonLabel {trackable} {items} />
+    </a>
+  {/if}
+  {#if canAddNew}
     <form
       class="element w-12 rounded-r-full border-l {innerBorderColor}"
       method="POST"
       action="/api/items"
-      use:submit={{ onResponse: newItemResponse }}
+      use:submit={{ onSubmit: newItemSubmit, onResponse: newItemResponse }}
     >
       <input type="hidden" name="trackable_id" value={trackable.trackable_id} />
       <button class="w-full h-full pl-3 rounded-r-full" on:click={() => dispatch('click-plus')}>
@@ -97,6 +110,12 @@
     </form>
   {/if}
 </div>
+
+{#if detailsPopupOpen}
+  <div class="fixed top-0 inset-x-0" on:click={() => (detailsPopupOpen = false)}>
+    Details for {JSON.stringify(trackable)}
+  </div>
+{/if}
 
 <style>
   .element {
