@@ -3,7 +3,13 @@
   import { User } from '$lib/user';
 
   export const load: Load = async function ({ fetch }) {
-    let userResponse = await fetch('/user');
+    if (browser) {
+      let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // Record timezone offset so that server-side queries can adjust appropriately.
+      document.cookie = `timezone=${timezone};max-age=31536000`;
+    }
+
+    let userResponse = await fetch('/user.json');
     let user: User | null;
     if (userResponse.ok) {
       user = await userResponse.json();
@@ -21,13 +27,13 @@
 <script lang="ts">
   import '../app.css';
   import { writable } from 'svelte/store';
-  import { createDarkStore, cssDarkModePreference } from '$lib/styles';
+  import { createDarkStore } from '$lib/styles';
   import { loadingStore } from '$lib/loader_status';
   import { createAppContext } from '$lib/context';
   import NavBar from './_NavBar.svelte';
   import { SvelteToast } from '@zerodevx/svelte-toast';
   import { toastStore } from '$lib/toast';
-  import { onMount } from 'svelte';
+  import { browser } from '$app/env';
 
   let userProp: User | null;
   export { userProp as user };
@@ -46,12 +52,6 @@
     reversed: true,
     intro: { y: 100 },
   };
-
-  onMount(() => {
-    let d = new Date();
-    // Record timezone offset so that server-side queries can adjust appropriately.
-    document.cookie = `timezoneOffset=${d.getTimezoneOffset()};max-age=31536000`;
-  });
 </script>
 
 <div id="tracksome-top" class:dark={$darkMode}>

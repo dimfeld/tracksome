@@ -13,8 +13,8 @@ const fetchColumns = baseColumns.extend(['?item_id']);
 export interface GetItemsOptions {
   userId: number;
   trackableId?: number;
-  startDate?: Date;
-  endDate?: Date;
+  startDate?: string | null;
+  endDate?: string | null;
 }
 
 export async function getItems(options: GetItemsOptions): Promise<Item[]> {
@@ -25,23 +25,14 @@ export async function getItems(options: GetItemsOptions): Promise<Item[]> {
   }
 
   if (options.startDate) {
-    wheres.push(`date >= $[startDate]`);
+    wheres.push(`date >= $[startDate]::date`);
   }
 
   if (options.endDate) {
-    wheres.push(`date <= $[endDate]`);
+    wheres.push(`date <= $[endDate]::date`);
   }
 
-  let usedOptions = {
-    ...options,
-    startDate: options.startDate?.toISOString(),
-    endDate: options.endDate?.toISOString(),
-  };
-
-  return db.query(
-    `SELECT ${fetchColumns.names} FROM items WHERE ${wheres.join(' AND ')}`,
-    usedOptions
-  );
+  return db.query(`SELECT ${fetchColumns.names} FROM items WHERE ${wheres.join(' AND ')}`, options);
 }
 
 export async function addItem(userId: number, item: Omit<Item, 'item_id'>): Promise<Item> {

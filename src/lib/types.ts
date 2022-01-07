@@ -2,11 +2,11 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { DefaultBody } from '@sveltejs/kit/types/endpoint';
 import { Theme } from './styles';
 
-export type TracksomeLocals = {
-  userId: number;
+export type TracksomeLocals<Authed extends boolean = true> = {
+  userId: Authed extends true ? number : number | null;
   theme: Theme;
   defaultDarkMode: boolean;
-  timezoneOffset: number;
+  timezone: string;
 };
 
 type Typify<T> = { [K in keyof T]: Typify<T[K]> };

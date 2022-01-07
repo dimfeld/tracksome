@@ -3,9 +3,8 @@
 
   export const load: Load = async ({ fetch }) => {
     let [trackables, counts] = await Promise.all([
-      fetch('/trackables').then((r) => r.json()),
-      [],
-      // fetch('/items?date=today').then((r) => r.json()),
+      fetch('/api/trackables/index.json').then((r) => r.json()),
+      fetch('/api/items/index.json?startDate=today&endDate=today').then((r) => r.json()),
     ]);
 
     return {
@@ -78,7 +77,7 @@
 <form
   class="p-2 w-full sm:w-96"
   method="POST"
-  action="/trackables"
+  action="/api/trackables"
   use:submit={{ onSubmit, onResponse }}
 >
   <input name="sort" type="hidden" value={maxSort + 1} />

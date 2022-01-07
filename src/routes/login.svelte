@@ -3,7 +3,7 @@
 
   function oauthLogin(provider: string) {
     const loginWindow = window.open(
-      `/user/login/${provider}`,
+      `/api/user/login/${provider}`,
       'oauthLogin',
       'width=600,height=400'
     );

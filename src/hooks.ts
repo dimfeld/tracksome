@@ -26,12 +26,12 @@ function csrfCheck(request: ServerRequest): boolean {
   return originUrl.origin === request.url.origin;
 }
 
-export const handle: Handle<TracksomeLocals> = async function ({ request, resolve }) {
+export const handle: Handle<TracksomeLocals<false>> = async function ({ request, resolve }) {
   let cookies = cookie.parse(request.headers.cookie || '');
   request.locals.userId = await session.read(cookies.sid);
   request.locals.theme = cookies.theme as Theme;
   request.locals.defaultDarkMode = cookies.defaultDarkMode === 'true';
-  request.locals.timezoneOffset = +cookies.timezoneOffset || 0;
+  request.locals.timezone = cookies.timezone || 'UTC';
 
   if (requireAuthed(request) && !request.locals.userId) {
     return {
@@ -56,7 +56,6 @@ export const getSession: GetSession<TracksomeLocals> = (request) => {
   return {
     theme: request.locals.theme,
     defaultDarkMode: request.locals.defaultDarkMode,
-    timezoneOffset: request.locals.timezoneOffset,
     randomColor: randomColor(),
   };
 };

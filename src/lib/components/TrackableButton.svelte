@@ -34,7 +34,7 @@
 
   function newItemResponse(res: Response) {
     if (res.ok) {
-      invalidate('/items');
+      invalidate('/api/items');
     } else {
       count--;
     }
@@ -76,7 +76,7 @@
     <form
       class="element w-12 rounded-r-full border-l {innerBorderColor}"
       method="POST"
-      action="/items"
+      action="/api/items"
       use:submit={{ onResponse: newItemResponse }}
     >
       <input type="hidden" name="trackable_id" value={trackable.trackable_id} />

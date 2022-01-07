@@ -1,3 +1,4 @@
+import { ReadOnlyFormData } from '@sveltejs/kit/types/helper';
 import type { ServerRequest } from '@sveltejs/kit/types/hooks';
 
 export interface SubmitActionOptions {
@@ -56,4 +57,19 @@ export function submit(
 
 export function fromForm(request: ServerRequest) {
   return request.headers.accept.includes('application/json');
+}
+
+export function formDataToJson<T = unknown>(
+  form: ReadOnlyFormData | T
+): T | Record<string, string> {
+  if (typeof (form as ReadOnlyFormData)?.entries == 'function') {
+    let output: Record<string, string> = {};
+    for (let [key, val] of (form as ReadOnlyFormData).entries()) {
+      output[key] = val;
+    }
+
+    return output;
+  } else {
+    return form as T;
+  }
 }

@@ -1,6 +1,7 @@
 import { RequestHandler } from '$lib/types';
 import { getTrackable, updateTrackable, deleteTrackable } from '$lib/db/trackable';
 import { Trackable } from '$lib/trackable';
+import { formDataToJson } from '$lib/form';
 
 export const get: RequestHandler<unknown, Trackable> = async ({ locals, params }) => {
   let result = await getTrackable({ userId: locals.userId, trackableId: +params.trackable_id });
@@ -12,8 +13,9 @@ export const get: RequestHandler<unknown, Trackable> = async ({ locals, params }
 };
 
 export const put: RequestHandler<Trackable, Trackable> = async ({ locals, body, params }) => {
+  let data = formDataToJson<Trackable>(body);
   let result = await updateTrackable(locals.userId, {
-    ...(body as Trackable),
+    ...(data as Trackable),
     trackable_id: +params.trackable_id,
   });
 
