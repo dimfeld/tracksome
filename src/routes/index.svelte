@@ -4,7 +4,8 @@
   export const load: Load = async ({ fetch }) => {
     let [trackables, counts] = await Promise.all([
       fetch('/trackables').then((r) => r.json()),
-      fetch('/items?date=today').then((r) => r.json()),
+      [],
+      // fetch('/items?date=today').then((r) => r.json()),
     ]);
 
     return {
@@ -22,7 +23,7 @@
   import TrackableButton from '$lib/components/TrackableButton.svelte';
   import { Trackable } from '$lib/trackable';
   import { Item } from '$lib/items';
-  import { submit } from '$lib/actions';
+  import { submit } from '$lib/form';
   import sorter from 'sorters';
   import { appContext } from '$lib/context';
   import { randomColor } from '$lib/colors';
@@ -69,12 +70,7 @@
 <ul class="p-2 w-full sm:w-96 space-y-4">
   {#each trackables as trackable (trackable.trackable_id)}
     <li>
-      <TrackableButton
-        label={trackable.name}
-        color={trackable.color}
-        plus={true}
-        countable={trackable.multiple_per_day}
-      />
+      <TrackableButton {trackable} plus={true} />
     </li>
   {/each}
 </ul>

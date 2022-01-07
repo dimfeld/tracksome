@@ -1,6 +1,8 @@
+import type { ServerRequest } from '@sveltejs/kit/types/hooks';
+
 export interface SubmitActionOptions {
   onSubmit?: (body: FormData | null) => boolean | undefined;
-  onResponse?: (response: Response) => void;
+  onResponse?: (response: Response, form: HTMLFormElement) => void;
   allowMultipleConcurrent?: boolean;
 }
 
@@ -37,7 +39,7 @@ export function submit(
         },
       });
 
-      onResponse?.(response);
+      onResponse?.(response, node);
     } finally {
       submitting = false;
     }
@@ -50,4 +52,8 @@ export function submit(
       node.removeEventListener('submit', handler);
     },
   };
+}
+
+export function fromForm(request: ServerRequest) {
+  return request.headers.accept.includes('application/json');
 }

@@ -2,7 +2,7 @@ import { Item } from '$lib/items';
 import { db, pgp } from './client';
 
 const baseColumns = new pgp.helpers.ColumnSet(
-  ['?trackable_id', { name: 'date', cast: 'date' }, 'note', 'added', 'modified'],
+  ['?trackable_id', { name: 'date', cast: 'date' }, 'note', '?added', 'modified'],
   { table: 'items' }
 );
 
@@ -34,8 +34,8 @@ export async function getItems(options: GetItemsOptions): Promise<Item[]> {
 
   let usedOptions = {
     ...options,
-    startDate: options.startDate?.toDateString(),
-    endDate: options.endDate?.toDateString(),
+    startDate: options.startDate?.toISOString(),
+    endDate: options.endDate?.toISOString(),
   };
 
   return db.query(
@@ -44,10 +44,7 @@ export async function getItems(options: GetItemsOptions): Promise<Item[]> {
   );
 }
 
-export async function addItem(
-  userId: number,
-  item: Omit<Item, 'user_id' | 'item_id'>
-): Promise<Item> {
+export async function addItem(userId: number, item: Omit<Item, 'item_id'>): Promise<Item> {
   let insert = pgp.helpers.insert({ ...item, user_id: userId }, insertColumns);
 
   return db.one(`${insert} RETURNING ${fetchColumns.names}`);

@@ -1,21 +1,19 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { contrastingColor } from '$lib/colors';
-  import { submit } from '$lib/actions';
+  import { submit } from '$lib/form';
   import * as d3 from 'd3';
   import { invalidate } from '$app/navigation';
+  import { Trackable } from '$lib/trackable';
 
-  export let label: string;
-  export let trackable_id: number;
-  export let color: string;
-  export let countable = false;
+  export let trackable: Trackable;
   export let count = 0;
 
   export let plus = false;
 
   const dispatch = createEventDispatcher<{ 'click-list': void; 'click-plus': void; click: void }>();
 
-  $: labColor = d3.lab(color);
+  $: labColor = d3.lab(trackable.color);
   $: innerBorderColor =
     labColor.l < 50 ? 'border-white border-opacity-30' : 'border-black border-opacity-20';
   $: ({ textColor, hoverTextColor, hoverBgColor } = contrastingColor(labColor));
@@ -29,7 +27,8 @@
     centerButtonClasses = 'pl-4 pr-14 rounded-full';
   }
 
-  function newItemSubmit() {
+  function newItemSubmit(data: FormData) {
+    data.set('date', new Date().toISOString());
     count++;
   }
 
@@ -44,12 +43,12 @@
 
 <div
   class="flex shadow-current drop-shadow-lg"
-  style="--normal-bg-color:{color};color:{textColor};--hover-text-color:{hoverTextColor};--hover-bg-color:{hoverBgColor}"
+  style="--normal-bg-color:{trackable.color};color:{textColor};--hover-text-color:{hoverTextColor};--hover-bg-color:{hoverBgColor}"
 >
-  <button class="py-2 flex-1 truncate flex {centerButtonClasses}" on:click>
+  <button class="element py-2 flex-1 truncate flex {centerButtonClasses}" on:click>
     <span class="w-4 mr-auto opacity-60"
       >{#if count}
-        {#if countable}
+        {#if trackable.multiple_per_day}
           {count}
         {:else}
           <svg
@@ -70,17 +69,18 @@
       {/if}</span
     >
     <span class="flex-1 ml-4 truncate">
-      {label}
+      {trackable.name}
     </span>
   </button>
   {#if plus}
-    <form method="POST" action="/items" use:submit={{ onResponse: newItemResponse }}>
-      <input type="hidden" name="trackable_id" value={trackable_id} />
-      <button
-        on:click={() => dispatch('click-plus')}
-        class="w-10 pl-2 pr-2 rounded-r-full {innerBorderColor}"
-        class:border-l={plus}
-      >
+    <form
+      class="element w-12 rounded-r-full border-l {innerBorderColor}"
+      method="POST"
+      action="/items"
+      use:submit={{ onResponse: newItemResponse }}
+    >
+      <input type="hidden" name="trackable_id" value={trackable.trackable_id} />
+      <button class="w-full h-full pl-3 rounded-r-full" on:click={() => dispatch('click-plus')}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5 opacity-60"
@@ -99,11 +99,11 @@
 </div>
 
 <style>
-  button {
+  .element {
     background-color: var(--normal-bg-color);
   }
 
-  button:hover {
+  .element:hover {
     background-color: var(--hover-bg-color);
     color: var(--hover-text-color);
   }
