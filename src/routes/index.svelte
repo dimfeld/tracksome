@@ -3,8 +3,8 @@
 
   export const load: Load = async ({ fetch }) => {
     let [trackables, counts] = await Promise.all([
-      fetch('/api/trackables/index.json').then((r) => r.json()),
-      fetch('/api/items/index.json?startDate=today&endDate=today').then((r) => r.json()),
+      fetch('/api/trackables').then((r) => r.json()),
+      fetch('/api/items?startDate=today&endDate=today').then((r) => r.json()),
     ]);
 
     return {
@@ -66,23 +66,24 @@
   $: newItemColor = $session.randomColor;
 </script>
 
-<ul class="p-2 w-full sm:w-96 space-y-4">
+<ul class="p-2 w-full mx-auto max-w-md space-y-4">
   {#each trackables as trackable (trackable.trackable_id)}
     <li>
-      <TrackableButton {trackable} plus={true} />
+      <TrackableButton {trackable} plus={trackable.multiple_per_day} />
     </li>
   {/each}
 </ul>
 
 <form
-  class="p-2 w-full sm:w-96"
+  class="p-2 mt-4 w-full mx-auto max-w-md"
   method="POST"
   action="/api/trackables"
   use:submit={{ onSubmit, onResponse }}
 >
+  <h2 class="font-medium text-dgray-600">New Trackable</h2>
   <input name="sort" type="hidden" value={maxSort + 1} />
-  <p>
-    <input class="w-full" name="name" autocomplete="off" type="text" placeholder="New Trackable" />
+  <p class="mt-2">
+    <input class="w-full" name="name" autocomplete="off" type="text" placeholder="Name" />
   </p>
   <p class="mt-2 flex justify-between items-center">
     <input name="color" type="color" class="inline h-8 bg-transparent" value={newItemColor} />

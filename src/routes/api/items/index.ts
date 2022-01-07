@@ -1,15 +1,18 @@
 import { RequestHandler } from '$lib/types';
 import * as itemDb from '$lib/db/items';
-import { toUserDate } from '$lib/dates';
+import { handleDateParam, toUserDate } from '$lib/dates';
 import { Item } from '$lib/items';
 import { formDataToJson } from '$lib/form';
 import { ReadOnlyFormData } from '@sveltejs/kit/types/helper';
 
 export const get: RequestHandler<unknown, Item[]> = async ({ locals, url }) => {
+  let startDate = handleDateParam(url.searchParams.get('startDate'), locals.timezone);
+  let endDate = handleDateParam(url.searchParams.get('endDate'), locals.timezone);
+
   let items = await itemDb.getItems({
     userId: locals.userId,
-    startDate: url.searchParams.get('startDate'),
-    endDate: url.searchParams.get('endDate'),
+    startDate,
+    endDate,
   });
 
   return {

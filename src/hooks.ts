@@ -33,6 +33,13 @@ export const handle: Handle<TracksomeLocals<false>> = async function ({ request,
   request.locals.defaultDarkMode = cookies.defaultDarkMode === 'true';
   request.locals.timezone = cookies.timezone || 'UTC';
 
+  let methodOverride = request.url.searchParams.get('_method');
+  request.url.searchParams.delete('_method');
+
+  if (methodOverride && request.method !== 'GET' && request.method !== 'HEAD') {
+    request.method = methodOverride;
+  }
+
   if (requireAuthed(request) && !request.locals.userId) {
     return {
       status: 403,

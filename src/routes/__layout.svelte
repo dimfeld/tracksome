@@ -9,7 +9,7 @@
       document.cookie = `timezone=${timezone};max-age=31536000`;
     }
 
-    let userResponse = await fetch('/user.json');
+    let userResponse = await fetch('/api/user');
     let user: User | null;
     if (userResponse.ok) {
       user = await userResponse.json();
@@ -59,7 +59,7 @@
     class="h-screen overflow-y-auto overflow-x-hidden bg-dgray-50 text-gray-900 dark:text-gray-100"
   >
     <NavBar {darkModeStore} />
-    <main>
+    <main class="mt-2">
       <slot />
     </main>
   </div>

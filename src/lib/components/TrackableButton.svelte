@@ -34,7 +34,7 @@
 
   function newItemResponse(res: Response) {
     if (res.ok) {
-      invalidate('/api/items');
+      invalidate('/api/items?startDate=today&endDate=today');
     } else {
       count--;
     }
