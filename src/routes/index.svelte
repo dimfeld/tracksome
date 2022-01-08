@@ -28,6 +28,7 @@
   import { randomColor } from '$lib/colors';
   import Button from '$lib/components/Button.svelte';
   import groupBy from 'just-group-by';
+  import { invalidate } from '$app/navigation';
 
   export let trackables: Trackable[];
   export let items: Item[];
@@ -46,31 +47,29 @@
     loading.delete('newTrackable');
 
     if (res.ok) {
-      let result = await res.json();
-      trackables = [...trackables, result];
-
+      invalidate(todayItemsUrl);
       $session.randomColor = randomColor();
     } else {
       $toasts.error(await res.text());
     }
   }
 
-  $: trackables = trackables.sort(
-    sorter(
-      (t) => t.sort,
-      (t) => t.name
-    )
-  );
-
   $: itemsByTrackable = groupBy(items, (item) => item.trackable_id);
-  $: trackableRows = trackables.map((trackable) => {
-    return {
-      trackable,
-      items: itemsByTrackable[trackable.trackable_id] ?? [],
-    };
-  });
+  $: trackableRows = trackables
+    .sort(
+      sorter(
+        (t) => t.sort,
+        (t) => t.name
+      )
+    )
+    .map((trackable) => {
+      return {
+        trackable,
+        items: itemsByTrackable[trackable.trackable_id] ?? [],
+      };
+    });
 
-  $: maxSort = trackables[trackables.length - 1]?.sort ?? 0;
+  $: maxSort = trackableRows[trackableRows.length - 1]?.trackable.sort ?? 0;
 
   $: newItemColor = $session.randomColor;
 </script>
