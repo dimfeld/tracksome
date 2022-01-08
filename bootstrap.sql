@@ -38,8 +38,8 @@ create table trackables (
   unique (trackable_id, user_id)
 );
 
-create table trackable_numeric_attributes (
-  trackable_numeric_attribute_id bigint primary key generated always as identity,
+create table trackable_attributes (
+  trackable_attribute_id bigint primary key generated always as identity,
   trackable_id bigint not null,
   user_id bigint not null references users,
   enabled boolean not null default true,
@@ -47,69 +47,36 @@ create table trackable_numeric_attributes (
   name text,
 
   required boolean not null default true,
-  min_value double precision,
-  max_value double precision,
-  step double precision,
+  attribute_type text,
+  constraints jsonb,
 
-  unique (trackable_numeric_attribute_id, user_id),
+  unique (trackable_attribute_id, user_id),
   foreign key (trackable_id, user_id) references trackables (trackable_id, user_id)
 );
 
-create index on trackable_numeric_attributes(user_id);
-create index on trackable_numeric_attributes(trackable_id);
+create index on trackable_attributes(user_id);
+create index on trackable_attributes(trackable_id);
 
-create table trackable_category_attributes (
-  trackable_category_attribute_id bigint primary key generated always as identity,
-  trackable_id bigint not null,
+create table trackable_attribute_categories (
+  trackable_attribute_category_id bigint primary key generated always as identity,
+  trackable_attribute_id bigint not null,
   user_id bigint not null references users,
   enabled boolean not null default true,
   name text not null,
-  sort int not null default 0,
-  required boolean not null default true,
-  multiple boolean not null default false,
+  color text not null,
 
-  unique (trackable_category_attribute_id, user_id),
-  foreign key (trackable_id, user_id) references trackables (trackable_id, user_id)
+  unique (trackable_attribute_category_id, trackable_attribute_id, user_id),
+  foreign key (trackable_attribute_id, user_id) references trackable_attributes (trackable_attribute_id, user_id)
 );
 
-create index on trackable_category_attributes(user_id);
-create index on trackable_category_attributes(trackable_id);
-
-
-create table trackable_category_attribute_categories (
-  trackable_category_attribute_category_id bigint primary key generated always as identity,
-  trackable_category_attribute_id bigint not null,
-  user_id bigint not null references users,
-  enabled boolean not null default true,
-  name text not null,
-
-  unique (trackable_category_attribute_category_id, user_id),
-  foreign key (trackable_category_attribute_id, user_id) references trackable_category_attributes (trackable_category_attribute_id, user_id)
-);
-
-create index on trackable_category_attribute_categories(user_id);
-create index on trackable_category_attribute_categories(trackable_category_attribute_id);
-
-create table trackable_notes (
-  trackable_note_id bigint primary key generated always as identity,
-  trackable_id bigint not null references trackables,
-  user_id bigint not null references users,
-  note text,
-  added timestamptz default now(),
-  modified timestamptz default now(),
-
-  unique (trackable_note_id, user_id),
-  foreign key (trackable_id, user_id) references trackables (trackable_id, user_id)
-);
-
-create index on trackable_notes(user_id);
-create index on trackable_notes(trackable_id);
+create index on trackable_attribute_categories(user_id);
+create index on trackable_attribute_categories(trackable_attribute_id);
 
 create table items (
   item_id bigint primary key generated always as identity,
   trackable_id bigint not null references trackables,
   user_id bigint not null references users,
-  date date not null,
+  time timestamptz not null,
   note text,
   added timestamptz default now(),
   modified timestamptz default now(),
@@ -118,53 +85,25 @@ create table items (
   foreign key (trackable_id, user_id) references trackables (trackable_id, user_id)
 );
 
-create index on items(user_id, date, trackable_id);
+create index on items(user_id, time, trackable_id);
 
-create table item_numeric_attributes (
-  item_numeric_attribute_id bigint primary key generated always as identity,
+create table item_attribute_values (
+  item_attribute_value_id bigint generated always as identity,
   item_id bigint not null,
-  trackable_numeric_attribute_id bigint not null references trackable_numeric_attributes,
+  trackable_attribute_id bigint not null references trackable_attributes,
   user_id bigint not null references users,
-  value double precision,
 
-  unique (item_numeric_attribute_id, user_id),
-  foreign key (item_id, user_id) references items (item_id, user_id)
-);
+  numeric_value double precision,
+  trackable_attribute_category_id bigint,
+  note text,
 
-create index on item_numeric_attributes(user_id);
-create index on item_numeric_attributes(item_id);
-create index on item_numeric_attributes(trackable_numeric_attribute_id);
-
-create table item_category_attributes (
-  item_category_attribute_id bigint primary key generated always as identity,
-  item_id bigint not null,
-  trackable_category_attribute_id bigint not null references trackable_category_attributes,
-  user_id bigint not null references users,
-  trackable_category_attribute_category_id bigint not null references trackable_category_attribute_categories,
-
-  unique (item_category_attribute_id, user_id),
+  unique (item_attribute_value_id, user_id),
   foreign key (item_id, user_id) references items (item_id, user_id),
-  foreign key (trackable_category_attribute_id, user_id) references trackable_category_attributes (trackable_category_attribute_id, user_id)
+  foreign key (trackable_attribute_id, trackable_attribute_category_id, user_id) references trackable_attribute_categories (trackable_attribute_id, trackable_attribute_category_id, user_id)
 );
 
-create index on item_category_attributes(user_id);
-create index on item_category_attributes(item_id);
-create index on item_category_attributes(trackable_category_attribute_id);
-
-create table item_notes (
-  item_note_id bigint primary key generated always as identity,
-  item_id bigint not null references items,
-  trackable_note_id bigint references trackable_notes,
-  user_id bigint not null references users,
-  note text not null,
-
-  unique (item_note_id, user_id),
-  foreign key (item_id, user_id) references items (item_id, user_id),
-  foreign key (trackable_note_id, user_id) references trackable_notes (trackable_note_id, user_id)
-);
-
-create index on item_notes(user_id);
-create index on item_notes(item_id);
-create index on item_notes(trackable_note_id);
+create index on item_attribute_values(user_id);
+create index on item_attribute_values(item_id);
+create index on item_attribute_values(trackable_attribute_id);
 
 commit;

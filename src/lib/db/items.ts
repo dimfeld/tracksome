@@ -1,10 +1,9 @@
 import { Item } from '$lib/items';
-import { ITask } from 'pg-promise';
 import { db, pgp } from './client';
 import * as trackableDb from './trackable';
 
 const baseColumns = new pgp.helpers.ColumnSet(
-  ['?trackable_id', { name: 'date', cast: 'date' }, 'note', '?added', 'modified'],
+  ['?trackable_id', { name: 'time', cast: 'timestamptz' }, 'note', '?added', 'modified'],
   { table: 'items' }
 );
 
@@ -17,24 +16,40 @@ export interface GetItemsOptions {
   trackableId?: number;
   startDate?: string | null;
   endDate?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  timezone: string;
+}
+
+function dayMatchClause(param: string) {
+  return `(date_trunc('day', time, $[timezone]) >= date_trunc('day', ${param}::timestamptz, $[timezone]))`;
 }
 
 export async function getItems(options: GetItemsOptions): Promise<Item[]> {
   let wheres: string[] = ['(user_id=$[userId])'];
 
+  let timezone = options.timezone || 'UTC';
+
   if (options.trackableId) {
     wheres.push(`trackable_id=$[trackableId]`);
   }
 
-  if (options.startDate) {
-    wheres.push(`date >= $[startDate]::date`);
+  if (options.startTime) {
+    wheres.push(`time >= $[startTime]::timestamptz`);
+  } else if (options.startDate) {
+    wheres.push(dayMatchClause('$[startDate]'));
   }
 
-  if (options.endDate) {
-    wheres.push(`date <= $[endDate]::date`);
+  if (options.endTime) {
+    wheres.push(`time <= $[endTime]::timestamptz`);
+  } else if (options.endDate) {
+    wheres.push(dayMatchClause('$[endDate]'));
   }
 
-  return db.query(`SELECT ${fetchColumns.names} FROM items WHERE ${wheres.join(' AND ')}`, options);
+  return db.query(`SELECT ${fetchColumns.names} FROM items WHERE ${wheres.join(' AND ')}`, {
+    ...options,
+    timezone,
+  });
 }
 
 export async function addItem(userId: number, item: Omit<Item, 'item_id'>): Promise<Item> {
@@ -44,7 +59,8 @@ export async function addItem(userId: number, item: Omit<Item, 'item_id'>): Prom
 
 export async function addItemIfUnderDailyLimit(
   userId: number,
-  item: Omit<Item, 'item_id'>
+  item: Omit<Item, 'item_id'>,
+  timezone: string
 ): Promise<Item> {
   let trackable = await trackableDb.getTrackable({ userId, trackableId: item.trackable_id });
   if (!trackable) {
@@ -53,7 +69,7 @@ export async function addItemIfUnderDailyLimit(
 
   const itemCriteria = `trackable_id=$[trackable_id]
       AND user_id=$[user_id]
-      AND date=$[date]::date`;
+      AND ${dayMatchClause('$[time]')}`;
 
   const query = `
     INSERT INTO items (${insertColumns.names})
@@ -67,9 +83,7 @@ export async function addItemIfUnderDailyLimit(
     RETURNING ${fetchColumns.names}
   `;
 
-  console.log(query);
-
-  let inputItem = { ...item, user_id: userId };
+  let inputItem = { ...item, user_id: userId, timezone };
   let result = await db.oneOrNone(query, inputItem);
   if (result) {
     return result;

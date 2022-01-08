@@ -7,7 +7,8 @@ import { TracksomeLocals } from '$lib/types';
 import { Theme } from '$lib/styles';
 
 function requireAuthed(request: ServerRequest) {
-  return request.url.pathname !== '/user' || request.method !== 'GET';
+  let path = request.url.pathname;
+  return request.method !== 'GET' || (path.startsWith('/api') && !path.startsWith('/api/user'));
 }
 
 /** Return true if this request doesn't present CSRF concerns. False if it appears to be
@@ -41,6 +42,7 @@ export const handle: Handle<TracksomeLocals<false>> = async function ({ request,
   }
 
   if (requireAuthed(request) && !request.locals.userId) {
+    console.log(request.url);
     return {
       status: 403,
       body: 'Not logged in',

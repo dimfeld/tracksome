@@ -31,6 +31,7 @@
   import { loadingStore } from '$lib/loader_status';
   import { createAppContext } from '$lib/context';
   import NavBar from './_NavBar.svelte';
+  import Login from './login.svelte';
   import { SvelteToast } from '@zerodevx/svelte-toast';
   import { toastStore } from '$lib/toast';
   import { browser } from '$app/env';
@@ -60,7 +61,11 @@
   >
     <NavBar {darkModeStore} />
     <main class="mt-2">
-      <slot />
+      {#if $user}
+        <slot />
+      {:else}
+        <Login />
+      {/if}
     </main>
   </div>
 </div>

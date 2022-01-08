@@ -38,7 +38,7 @@
     }
 
     if (data) {
-      data.set('date', new Date().toISOString());
+      data.set('time', new Date().toISOString());
     }
   }
 
