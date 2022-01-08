@@ -43,11 +43,12 @@
     loading.add('newTrackable');
   }
 
-  async function onResponse(res: Response) {
+  async function onResponse(res: Response, form: HTMLFormElement) {
     loading.delete('newTrackable');
 
     if (res.ok) {
       invalidate(todayItemsUrl);
+      form.reset();
       $session.randomColor = randomColor();
     } else {
       $toasts.error(await res.text());
