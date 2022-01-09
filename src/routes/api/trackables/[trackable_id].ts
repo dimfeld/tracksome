@@ -1,4 +1,4 @@
-import { RequestHandler } from '$lib/types';
+import { RequestHandler } from '$lib/endpoints';
 import { getTrackable, updateTrackable, deleteTrackable } from '$lib/db/trackable';
 import { Trackable } from '$lib/trackable';
 import { formDataToJson } from '$lib/form';

@@ -1,4 +1,3 @@
-import { goto } from '$app/navigation';
 import { ReadOnlyFormData } from '@sveltejs/kit/types/helper';
 import type { ServerRequest } from '@sveltejs/kit/types/hooks';
 

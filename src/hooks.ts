@@ -3,7 +3,7 @@ import * as session from '$lib/db/session';
 import { Handle } from '@sveltejs/kit';
 import { GetSession, ServerRequest } from '@sveltejs/kit/types/hooks';
 import { randomColor } from '$lib/colors';
-import { TracksomeLocals } from '$lib/types';
+import { TracksomeLocals } from '$lib/endpoints';
 import { Theme } from '$lib/styles';
 
 function requireAuthed(request: ServerRequest) {

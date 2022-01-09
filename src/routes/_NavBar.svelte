@@ -8,7 +8,7 @@
 </script>
 
 <nav class="flex flex-row items-center p-2 bg-dgray-200">
-  <span class="text-xl">TrackSome</span>
+  <a class="text-xl" href="/">TrackSome</a>
   <div class="flex items-center ml-auto">
     <button class="text-dgray-700 w-8 h-8 grid place-items-center" title="User Settings">
       {#if $user?.avatar}

@@ -1,4 +1,4 @@
-import { RequestHandler } from '$lib/types';
+import { RequestHandler, parseNumber } from '$lib/endpoints';
 import * as itemDb from '$lib/db/items';
 import { Item } from '$lib/items';
 import { formDataToJson } from '$lib/form';
@@ -9,6 +9,7 @@ export const get: RequestHandler<unknown, Item[]> = async ({ locals, url }) => {
     userId: locals.userId,
     startDate: url.searchParams.get('startDate'),
     endDate: url.searchParams.get('endDate'),
+    trackableId: parseNumber(url.searchParams.get('trackableId')),
     timezone: locals.timezone,
   });
 

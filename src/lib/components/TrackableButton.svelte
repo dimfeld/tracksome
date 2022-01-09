@@ -47,44 +47,15 @@
       invalidate(todayItemsUrl);
     }
   }
-
-  function showDetails(e: MouseEvent) {
-    if (desktopScreen()) {
-      detailsPopupOpen = true;
-    } else {
-      goto((e.target as HTMLAnchorElement).href);
-    }
-  }
 </script>
 
 <div
   class="flex shadow-current drop-shadow-lg"
   style="--normal-bg-color:{trackable.color};color:{textColor};--hover-text-color:{hoverTextColor};--hover-bg-color:{hoverBgColor}"
 >
-  {#if !items.length}
-    <form
-      class={centerButtonClasses}
-      method="POST"
-      action="/api/items"
-      use:submit={{
-        onSubmit: newItemSubmit,
-        onResponse: newItemResponse,
-      }}
-    >
-      <input type="hidden" name="trackable_id" value={trackable.trackable_id} />
-      <button type="submit" class="flex w-full">
-        <TrackableButtonLabel {trackable} {items} />
-      </button>
-    </form>
-  {:else}
-    <a
-      class="{centerButtonClasses} flex w-full"
-      href="/trackables/{trackable.trackable_id}"
-      on:click|preventDefault={showDetails}
-    >
-      <TrackableButtonLabel {trackable} {items} />
-    </a>
-  {/if}
+  <a class="{centerButtonClasses} flex w-full" href="/trackables/{trackable.trackable_id}">
+    <TrackableButtonLabel {trackable} {items} />
+  </a>
   {#if canAddNew}
     <form
       class="element w-12 rounded-r-full border-l {innerBorderColor}"

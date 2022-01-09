@@ -17,3 +17,11 @@ type TracksomeRequestHandler<Input = unknown, Output = DefaultBody> = RequestHan
   Typify<Output>
 >;
 export type { TracksomeRequestHandler as RequestHandler };
+
+export function parseNumber(value: string | null): number | undefined {
+  let v = parseInt(value, 10);
+  if (Number.isNaN(v)) {
+    return undefined;
+  }
+  return v;
+}

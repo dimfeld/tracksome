@@ -1,18 +1,27 @@
 <script context="module" lang="ts">
   import type { Load } from '@sveltejs/kit';
+  import { handleJsonResponse, ResponseError } from '$lib/load';
 
   export const load: Load = async ({ fetch }) => {
-    let [trackables, items] = await Promise.all([
-      fetch('/api/trackables').then((r) => r.json()),
-      fetch(todayItemsUrl).then((r) => r.json()),
-    ]);
+    try {
+      let [trackables, items] = await Promise.all([
+        handleJsonResponse(fetch('/api/trackables')),
+        handleJsonResponse(fetch(todayItemsUrl)),
+      ]);
 
-    return {
-      props: {
-        trackables,
-        items,
-      },
-    };
+      return {
+        props: {
+          trackables,
+          items,
+        },
+      };
+    } catch (e) {
+      if (e instanceof ResponseError) {
+        return e.toResponse();
+      } else {
+        throw e;
+      }
+    }
   };
 </script>
 

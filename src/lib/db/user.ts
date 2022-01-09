@@ -1,5 +1,5 @@
 import { db, pgp, skipIfAbsent } from './client';
-import { TracksomeLocals } from '$lib/types';
+import { TracksomeLocals } from '$lib/endpoints';
 import { User } from '../user';
 
 export interface UserCreateOptions {
