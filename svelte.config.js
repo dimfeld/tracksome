@@ -11,6 +11,9 @@ const config = {
         noExternal: ['sorters'],
       },
     }),
+    methodOverride: {
+      allowed: ['PATCH', 'PUT', 'DELETE'],
+    },
     adapter: adapter(),
   },
 };
