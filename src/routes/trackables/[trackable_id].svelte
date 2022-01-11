@@ -42,6 +42,8 @@
   import { submit } from '$lib/form';
   import Button from '$lib/components/Button.svelte';
   import Labelled from '$lib/components/Labelled.svelte';
+  import Icon from '$lib/components/Icon.svelte';
+  import { pencilSolid } from '$lib/components/icons';
 
   export let trackable: Trackable;
   export let items: Item[];
@@ -61,12 +63,27 @@
   $: canAddNew = trackable.multiple_per_day || !items.length;
 
   $: trackableColors = colorVars(d3.lab(trackable.color));
+  $: updateTrackablePath = `/api/trackables/${trackable.trackable_id}?_method=PATCH`;
 </script>
 
 <section class="p-2 mx-auto w-full sm:max-w-lg" style={trackableColors}>
-  <h1 class="px-3 py-2 w-full text-xl text-center">
+  <h1 class="px-8 py-2 w-full text-xl text-center relative">
     {trackable.name}
+    <Button class="absolute right-0" title="Edit" type="button" iconButton>
+      <Icon icon={pencilSolid} />
+    </Button>
   </h1>
+
+  <!-- TODO This should only show up in an edit mode or something. -->
+  <form
+    action={updateTrackablePath}
+    method="POST"
+    use:submit
+    class="flex justify-end items-center space-x-2"
+  >
+    <input type="color" name="color" bind:value={trackable.color} />
+    <Button type="submit" size="sm">Set Color</Button>
+  </form>
 
   {#if canAddNew}
     <form
@@ -91,7 +108,7 @@
             <span>{i.date}</span>
             <span>{i.time}</span>
           </p>
-          <Labelled label="Note">
+          <Labelled class="mt-2" label="Note">
             <input class="w-full" type="text" name="note" bind:value={item.note} />
           </Labelled>
         </form>
@@ -104,6 +121,6 @@
 
 <style>
   li {
-    border-color: var(--trackable-bg-color);
+    border-color: var(--trackable-text-color);
   }
 </style>
