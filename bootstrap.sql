@@ -35,6 +35,9 @@ create table trackables (
   sort int not null default 0,
   color text not null,
 
+  added timestamptz not null default now(),
+  modified timestamptz not null default now(),
+
   unique (trackable_id, user_id)
 );
 

@@ -98,7 +98,11 @@ export async function addItemIfUnderDailyLimit(
   }
 }
 
-export async function updateItem(userId: number, itemId: number, item: Partial<Item>) {
+export async function updateItem(
+  userId: number,
+  itemId: number,
+  item: Partial<Item>
+): Promise<Item | null> {
   let update = partialUpdate({
     columns: updateColumns,
     whereColumns: ['user_id', 'item_id'],
@@ -106,5 +110,13 @@ export async function updateItem(userId: number, itemId: number, item: Partial<I
     updateModified: true,
   });
 
-  return db.query(update, { ...item, user_id: userId, item_id: itemId });
+  if (!update) {
+    return null;
+  }
+
+  return db.oneOrNone(`${update} RETURNING ${fetchColumns.names}`, {
+    ...item,
+    user_id: userId,
+    item_id: itemId,
+  });
 }

@@ -1,4 +1,4 @@
-import { db, pgp } from '$lib/db/client';
+import { db, partialUpdate, pgp } from '$lib/db/client';
 import { Trackable } from '$lib/trackable';
 
 const baseColumns = new pgp.helpers.ColumnSet(
@@ -35,6 +35,29 @@ export function addTrackable(
     pgp.helpers.insert({ user_id: userId, ...item, enabled: true }, insertColumns) +
     ` RETURNING ${fetchColumns.names}`;
   return db.one(insertQuery);
+}
+
+export function partialUpdateTrackable(
+  userId: number,
+  trackableId: number,
+  trackable: Partial<Trackable>
+): Promise<Trackable | null> {
+  let query = partialUpdate({
+    columns: updateColumns,
+    whereColumns: ['user_id', 'trackable_id'],
+    data: trackable,
+    updateModified: true,
+  });
+
+  if (!query) {
+    return Promise.resolve(null);
+  }
+
+  return db.oneOrNone(`${query} RETURNING ${fetchColumns.names}`, {
+    ...trackable,
+    user_id: userId,
+    trackable_id: trackableId,
+  });
 }
 
 export function updateTrackable(userId: number, item: Trackable): Promise<Trackable | null> {

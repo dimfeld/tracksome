@@ -1,5 +1,10 @@
 import { RequestHandler } from '$lib/endpoints';
-import { getTrackable, updateTrackable, deleteTrackable } from '$lib/db/trackable';
+import {
+  getTrackable,
+  updateTrackable,
+  deleteTrackable,
+  partialUpdateTrackable,
+} from '$lib/db/trackable';
 import { Trackable } from '$lib/trackable';
 import { formDataToJson } from '$lib/form';
 
@@ -22,6 +27,25 @@ export const put: RequestHandler<Trackable, Trackable> = async ({ locals, body, 
     ...(data as Trackable),
     trackable_id: +params.trackable_id,
   });
+
+  if (result) {
+    return {
+      body: result,
+    };
+  } else {
+    return {
+      status: 404,
+    };
+  }
+};
+
+export const patch: RequestHandler<Partial<Trackable>, Trackable | null> = async ({
+  locals,
+  body,
+  params,
+}) => {
+  let data = formDataToJson<Partial<Trackable>>(body);
+  let result = await partialUpdateTrackable(locals.userId, +params.trackable_id, data);
 
   if (result) {
     return {
