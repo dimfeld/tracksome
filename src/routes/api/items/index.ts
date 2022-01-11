@@ -18,19 +18,23 @@ export const get: RequestHandler<unknown, Item[]> = async ({ locals, url }) => {
   };
 };
 
-export const post: RequestHandler<Item | ReadOnlyFormData, Item> = async ({ locals, body }) => {
+export const post: RequestHandler<Item | ReadOnlyFormData, Item | null> = async ({
+  locals,
+  body,
+}) => {
   let nowUtc = new Date().toISOString();
   let data = formDataToJson<Item>(body);
 
   let newItem: Omit<Item, 'item_id'> = {
     trackable_id: +data.trackable_id,
     time: data.time || nowUtc,
+    timezone: locals.timezone,
     note: data.note || '',
     added: nowUtc,
     modified: nowUtc,
   };
 
-  let item = await itemDb.addItemIfUnderDailyLimit(locals.userId, newItem, locals.timezone);
+  let item = await itemDb.addItemIfUnderDailyLimit(locals.userId, newItem);
 
   return {
     body: item,

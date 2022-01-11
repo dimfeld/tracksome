@@ -77,6 +77,7 @@ create table items (
   trackable_id bigint not null references trackables,
   user_id bigint not null references users,
   time timestamptz not null,
+  timezone text not null,
   note text,
   added timestamptz default now(),
   modified timestamptz default now(),

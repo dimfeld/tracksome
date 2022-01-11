@@ -9,6 +9,10 @@ export const get: RequestHandler<unknown, Trackable> = async ({ locals, params }
     return {
       body: result,
     };
+  } else {
+    return {
+      status: 404,
+    };
   }
 };
 
@@ -22,6 +26,10 @@ export const put: RequestHandler<Trackable, Trackable> = async ({ locals, body, 
   if (result) {
     return {
       body: result,
+    };
+  } else {
+    return {
+      status: 404,
     };
   }
 };
