@@ -2,7 +2,7 @@
   import type { Load } from '@sveltejs/kit';
   import { handleJsonResponse, ResponseError } from '$lib/load';
 
-  function itemUrl(trackable_id: string) {
+  function itemUrl(trackable_id: string | number) {
     return `/api/items?trackableId=${trackable_id}&startDate=today&endDate=today`;
   }
 
@@ -92,7 +92,7 @@
       class="mt-4"
       use:submit={{
         onSubmit: (data) => newItemSubmit(data, canAddNew),
-        onResponse: newItemResponse,
+        onResponse: (r) => newItemResponse(r, itemUrl(trackable.trackable_id)),
       }}
     >
       <input type="hidden" name="trackable_id" value={trackable.trackable_id} />
@@ -122,5 +122,10 @@
 <style>
   li {
     border-color: var(--trackable-text-color);
+  }
+
+  input:focus {
+    border-color: var(--trackable-text-color) !important;
+    --tw-shadow: var(--trackable-text-color) !important;
   }
 </style>
