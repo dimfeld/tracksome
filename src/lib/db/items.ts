@@ -1,9 +1,16 @@
 import { Item } from '$lib/items';
-import { db, pgp } from './client';
+import { db, partialUpdate, pgp } from './client';
 import * as trackableDb from './trackable';
 
 const baseColumns = new pgp.helpers.ColumnSet(
-  ['?trackable_id', { name: 'time', cast: 'timestamptz' }, 'note', '?added', 'modified'],
+  [
+    '?trackable_id',
+    { name: 'time', cast: 'timestamptz' },
+    'timezone',
+    'note',
+    '?added',
+    'modified',
+  ],
   { table: 'items' }
 );
 
@@ -21,8 +28,8 @@ export interface GetItemsOptions {
   timezone: string;
 }
 
-function dayMatchClause(param: string) {
-  return `(date_trunc('day', time, $[timezone]) >= date_trunc('day', ${param}::timestamptz, $[timezone]))`;
+function dayMatchClause(param: string, operator = '=') {
+  return `(date_trunc('day', time, timezone) ${operator} date_trunc('day', ${param}::timestamptz, $[timezone]))`;
 }
 
 export async function getItems(options: GetItemsOptions): Promise<Item[]> {
@@ -37,13 +44,13 @@ export async function getItems(options: GetItemsOptions): Promise<Item[]> {
   if (options.startTime) {
     wheres.push(`time >= $[startTime]::timestamptz`);
   } else if (options.startDate) {
-    wheres.push(dayMatchClause('$[startDate]'));
+    wheres.push(dayMatchClause('$[startDate]', '>='));
   }
 
   if (options.endTime) {
     wheres.push(`time <= $[endTime]::timestamptz`);
   } else if (options.endDate) {
-    wheres.push(dayMatchClause('$[endDate]'));
+    wheres.push(dayMatchClause('$[endDate]', '<='));
   }
 
   return db.query(`SELECT ${fetchColumns.names} FROM items WHERE ${wheres.join(' AND ')}`, {
@@ -59,9 +66,8 @@ export async function addItem(userId: number, item: Omit<Item, 'item_id'>): Prom
 
 export async function addItemIfUnderDailyLimit(
   userId: number,
-  item: Omit<Item, 'item_id'>,
-  timezone: string
-): Promise<Item> {
+  item: Omit<Item, 'item_id'>
+): Promise<Item | null> {
   let trackable = await trackableDb.getTrackable({ userId, trackableId: item.trackable_id });
   if (!trackable) {
     return null;
@@ -83,11 +89,22 @@ export async function addItemIfUnderDailyLimit(
     RETURNING ${fetchColumns.names}
   `;
 
-  let inputItem = { ...item, user_id: userId, timezone };
+  let inputItem = { ...item, user_id: userId };
   let result = await db.oneOrNone(query, inputItem);
   if (result) {
     return result;
   } else {
     return db.one(`SELECT ${fetchColumns.names} FROM items WHERE ${itemCriteria}`, inputItem);
   }
+}
+
+export async function updateItem(userId: number, itemId: number, item: Partial<Item>) {
+  let update = partialUpdate({
+    columns: updateColumns,
+    whereColumns: ['user_id', 'item_id'],
+    data: item,
+    updateModified: true,
+  });
+
+  return db.query(update, { ...item, user_id: userId, item_id: itemId });
 }
