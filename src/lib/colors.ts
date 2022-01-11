@@ -45,6 +45,7 @@ export function contrastingColor(color: d3.LabColor) {
 
   return {
     textColor: textColor.rgb().toString(),
+    bgColor: color.rgb().toString(),
     hoverTextColor: hoverTextColor.rgb().toString(),
     hoverBgColor: hoverBgColor.rgb().toString(),
   };

@@ -7,6 +7,7 @@
   export let style: keyof typeof styles = 'normal';
   export let iconButton = false;
   export let title: string | undefined = undefined;
+  export let useTrackableColors = false;
 
   let classNames = '';
   export { classNames as class };
@@ -36,6 +37,7 @@
       'border-accent-300 dark:border-accent-600 bg-accent-100 dark:bg-black hover:bg-accent-200 dark:hover:bg-gray dark:hover:border-accent-500 dark:hover:bg-accent-900 dark:hover:bg-opacity-50 focus:ring-accent-500 dark:focus:ring-accent-700 ',
     danger:
       'border-red-300 dark:border-red-700 bg-white dark:bg-black hover:bg-red-50 dark:hover:bg-red-900 focus:ring-red-500 dark:focus:ring-accent-700',
+    none: '',
   };
 
   $: dynamicClasses = `${sizes[size]} ${iconButton ? iconSizePadding[size] : sizePadding[size]} ${
@@ -50,6 +52,21 @@
   {title}
   on:click
   class="inline-flex justify-center items-center border shadow-sm font-medium text-gray-700 disabled:text-gray-400 dark:text-gray-300 dark:disabled:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 transition-colors duration-200 {dynamicClasses}"
+  class:use-trackable-colors={useTrackableColors}
   class:cursor-not-allowed={disabled}
   ><slot />
 </button>
+
+<style>
+  button.use-trackable-colors {
+    background-color: var(--trackable-bg-color) !important;
+    color: var(--trackable-text-color) !important;
+    border-color: var(--trackable-text-color) !important;
+  }
+
+  button.use-trackable-colors:hover {
+    background-color: var(--trackable-hover-bg-color) !important;
+    color: var(--trackable-hover-text-color) !important;
+    border-color: var(--trackable-hover-text-color) !important;
+  }
+</style>

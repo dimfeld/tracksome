@@ -4,10 +4,11 @@
   import { submit } from '$lib/form';
   import * as d3 from 'd3';
   import { goto, invalidate } from '$app/navigation';
-  import { Trackable } from '$lib/trackable';
+  import { Trackable, colorVars } from '$lib/trackable';
   import { desktopScreen } from '$lib/styles';
-  import { Item, todayItemsUrl } from '$lib/items';
+  import { Item, newItemSubmit, newItemResponse } from '$lib/items';
   import TrackableButtonLabel from './_TrackableButtonLabel.svelte';
+  import { showTippy } from '$lib/tippy';
 
   export let trackable: Trackable;
   export let items: Item[];
@@ -17,7 +18,7 @@
   $: labColor = d3.lab(trackable.color);
   $: innerBorderColor =
     labColor.l < 50 ? 'border-white border-opacity-30' : 'border-black border-opacity-20';
-  $: ({ textColor, hoverTextColor, hoverBgColor } = contrastingColor(labColor));
+  $: cssVars = colorVars(labColor);
 
   let detailsPopupOpen = false;
 
@@ -31,28 +32,9 @@
   $: centerButtonClasses =
     'element py-2 flex-1 truncate' +
     (canAddNew ? 'px-4 rounded-l-full' : 'pl-4 pr-14 rounded-full');
-
-  function newItemSubmit(data: FormData | null) {
-    if (!trackable.multiple_per_day && items.length) {
-      return false;
-    }
-
-    if (data) {
-      data.set('time', new Date().toISOString());
-    }
-  }
-
-  function newItemResponse(res: Response) {
-    if (res.ok) {
-      invalidate(todayItemsUrl);
-    }
-  }
 </script>
 
-<div
-  class="flex shadow-current drop-shadow-lg"
-  style="--normal-bg-color:{trackable.color};color:{textColor};--hover-text-color:{hoverTextColor};--hover-bg-color:{hoverBgColor}"
->
+<div class="flex shadow-current drop-shadow-lg" style={cssVars}>
   <a class="{centerButtonClasses} flex w-full" href="/trackables/{trackable.trackable_id}">
     <TrackableButtonLabel {trackable} {items} />
   </a>
@@ -61,7 +43,10 @@
       class="element w-12 rounded-r-full border-l {innerBorderColor}"
       method="POST"
       action="/api/items"
-      use:submit={{ onSubmit: newItemSubmit, onResponse: newItemResponse }}
+      use:submit={{
+        onSubmit: (data) => newItemSubmit(data, canAddNew),
+        onResponse: newItemResponse,
+      }}
     >
       <input type="hidden" name="trackable_id" value={trackable.trackable_id} />
       <button class="w-full h-full pl-3 rounded-r-full" on:click={() => dispatch('click-plus')}>
@@ -83,18 +68,19 @@
 </div>
 
 {#if detailsPopupOpen}
-  <div class="fixed top-0 inset-x-0" on:click={() => (detailsPopupOpen = false)}>
+  <div use:showTippy={{ position: 'auto', close: () => (detailsPopupOpen = false) }}>
     Details for {JSON.stringify(trackable)}
   </div>
 {/if}
 
 <style>
   .element {
-    background-color: var(--normal-bg-color);
+    background-color: var(--trackable-bg-color);
+    color: var(--trackable-text-color);
   }
 
   .element:hover {
-    background-color: var(--hover-bg-color);
-    color: var(--hover-text-color);
+    background-color: var(--trackable-hover-bg-color);
+    color: var(--trackable-hover-text-color);
   }
 </style>
