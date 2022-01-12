@@ -41,31 +41,62 @@ export interface DateRange {
   end: Date;
 }
 
+const granularities: Record<
+  DateGranularity,
+  {
+    add(date: Date, delta: number): Date;
+    adjustStart?(date: Date): Date;
+    adjustEnd?(date: Date): Date;
+    deltaEndAdjustment?: number;
+    deltaMultiplier: number;
+  }
+> = {
+  day: {
+    add: addDays,
+    deltaMultiplier: 1,
+  },
+  '7d': {
+    add: addDays,
+    deltaMultiplier: 7,
+    deltaEndAdjustment: 1,
+  },
+  '30d': {
+    add: addDays,
+    deltaMultiplier: 30,
+    deltaEndAdjustment: 1,
+  },
+  week: {
+    add: addWeeks,
+    deltaMultiplier: 1,
+    adjustStart: startOfWeek,
+    adjustEnd: endOfWeek,
+  },
+  month: {
+    add: addMonths,
+    deltaMultiplier: 1,
+    adjustStart: startOfMonth,
+    adjustEnd: endOfMonth,
+  },
+};
+
 export function dateRange(baseDate: Date, granularity: DateGranularity, delta = 0): DateRange {
-  let start: Date;
-  let end: Date;
-  switch (granularity) {
-    default:
-    case 'day':
-      start = addDays(baseDate, delta);
-      end = addDays(baseDate, delta);
-      break;
-    case '7d':
-      start = addDays(baseDate, delta * 7);
-      end = addDays(baseDate, (delta - 1) * 7);
-      break;
-    case '30d':
-      start = addDays(baseDate, delta * 30);
-      end = addDays(baseDate, (delta - 1) * 30);
-      break;
-    case 'week':
-      start = startOfWeek(addWeeks(baseDate, delta));
-      end = endOfWeek(addWeeks(baseDate, delta));
-      break;
-    case 'month':
-      start = startOfMonth(addMonths(baseDate, delta));
-      end = endOfMonth(addMonths(baseDate, delta));
-      break;
+  const {
+    add,
+    deltaMultiplier,
+    deltaEndAdjustment = 0,
+    adjustStart,
+    adjustEnd,
+  } = granularities[granularity] ?? granularities.day;
+
+  let start = add(baseDate, delta * deltaMultiplier);
+  let end = add(baseDate, (delta - deltaEndAdjustment) * deltaMultiplier);
+
+  if (adjustStart) {
+    start = adjustStart(start);
+  }
+
+  if (adjustEnd) {
+    end = adjustEnd(end);
   }
 
   return { start, end };

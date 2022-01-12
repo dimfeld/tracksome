@@ -53,7 +53,6 @@ export async function getItems(options: GetItemsOptions): Promise<Item[]> {
     wheres.push(dayMatchClause('$[endDate]', '<='));
   }
 
-  console.log('items query', wheres, options);
   return db.query(`SELECT ${fetchColumns.names} FROM items WHERE ${wheres.join(' AND ')}`, {
     ...options,
     timezone,

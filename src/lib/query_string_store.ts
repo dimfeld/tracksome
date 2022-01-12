@@ -60,7 +60,7 @@ function updateSearchParams(
   return newQuery;
 }
 
-export function updateQueryString(url: URL, params: Record<string, QsValue | QsValue[]>) {
+export function updateQueryString(url: URL, params: Record<string, QsValue | QsValue[] | null>) {
   let newQuery = updateSearchParams(url.searchParams, params);
 
   let output = new URL(url);

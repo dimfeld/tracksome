@@ -59,7 +59,6 @@ export async function handleLoginCode(
     },
   }).then((r) => r.json());
 
-  console.dir({ tokenResponse });
   let accessToken: string = tokenResponse.access_token;
 
   const userData = await fetch(provider.userUrl, {
@@ -69,7 +68,6 @@ export async function handleLoginCode(
       'User-Agent': 'TrackSome',
     },
   }).then((r) => r.json());
-  console.dir({ userData, accessToken });
   const userDetails = provider.extractUserDetails(userData);
 
   const { user, cookie } = await sessionDb.create({

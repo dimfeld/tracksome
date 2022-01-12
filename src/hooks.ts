@@ -35,7 +35,6 @@ export const handle: Handle<TracksomeLocals<false>> = async function ({ request,
   request.locals.timezone = cookies.timezone || 'UTC';
 
   if (requireAuthed(request) && !request.locals.userId) {
-    console.log(request.url);
     return {
       status: 403,
       body: 'Not logged in',

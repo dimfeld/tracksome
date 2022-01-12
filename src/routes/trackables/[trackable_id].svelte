@@ -57,22 +57,18 @@
     formatAsDate,
   } from '$lib/dates';
   import { updateQueryString } from '$lib/query_string_store';
+  import { goto } from '$app/navigation';
 
   export let trackable: Trackable;
   export let items: Item[];
 
-  $: itemRows = items.map((item) => {
-    let date = formatInTimeZone(item.time, item.timezone, 'yyyy-MM-dd');
-    let time = formatInTimeZone(item.time, item.timezone, 'h:mm:ss a');
+  function onUpdateTrackableResponse(res: Response) {
+    if (res.ok) {
+      goto(updateQueryString($page.url, { edit: null }).toString());
+    }
+  }
 
-    return {
-      item,
-      date,
-      time,
-      updateApiPath: `/api/items/${item.item_id}?_method=PATCH`,
-    };
-  });
-
+  $: edit = $page.url.searchParams.get('edit') == 'true';
   $: timezone = currentTimezone($session);
   $: currentDate = dateOrToday($page.url.searchParams.get('date'), timezone);
   $: currentGranularity = ($page.url.searchParams.get('granularity') as DateGranularity) || 'day';
@@ -92,31 +88,57 @@
 <section class="p-2 mx-auto w-full sm:max-w-lg" style={trackableColors}>
   <h1 class="px-8 py-2 w-full text-xl text-center relative">
     {trackable.name}
-    <Button class="absolute right-0" title="Edit" type="button" useTrackableColors iconButton>
-      <Icon icon={pencilSolid} />
-    </Button>
+    {#if !edit}
+      <a href={updateQueryString($page.url, { edit: true }).toString()}>
+        <Button class="absolute right-0" title="Edit" type="button" useTrackableColors iconButton>
+          <Icon icon={pencilSolid} />
+        </Button>
+      </a>
+    {/if}
   </h1>
 
-  <h2>
-    <a href={updateQueryString($page.url, { date: prevDate }).toString()}>&lt;</a>
+  <p class="font-medium text-dgray-600 text-center">
+    <a sveltekit:prefetch href={updateQueryString($page.url, { date: prevDate }).toString()}>&lt;</a
+    >
     {#if startDateLabel == endDateLabel}
       {startDateLabel}
     {:else}
       {startDateLabel} &mdash; {endDateLabel}
     {/if}
-    <a href={updateQueryString($page.url, { date: nextDate }).toString()}>&gt;</a>
-  </h2>
+    <a sveltekit:prefetch href={updateQueryString($page.url, { date: nextDate }).toString()}>&gt;</a
+    >
+  </p>
 
-  <!-- TODO This should only show up in an edit mode or something. -->
-  <form
-    action={updateTrackablePath}
-    method="POST"
-    use:submit
-    class="flex justify-end items-center space-x-2"
-  >
-    <input type="color" name="color" bind:value={trackable.color} />
-    <Button type="submit" size="sm" useTrackableColors={true}>Set Color</Button>
-  </form>
+  {#if edit}
+    <form
+      action={updateTrackablePath}
+      method="POST"
+      use:submit={{ onResponse: onUpdateTrackableResponse }}
+      class="flex flex-col space-y-4 card shadow-lg border rounded-lg p-2"
+    >
+      <h2 class="text-lg font-medium">Editing</h2>
+
+      <div class="flex items-center space-x-4">
+        <Labelled class="flex-1" label="Name">
+          <input name="name" type="text" bind:value={trackable.name} class="w-full" />
+        </Labelled>
+        <Labelled label="Color">
+          <input
+            type="color"
+            name="color"
+            class="h-10 bg-transparent"
+            bind:value={trackable.color}
+          />
+        </Labelled>
+      </div>
+
+      <div class="flex justify-end space-x-2">
+        <a href={updateQueryString($page.url, { edit: null }).toString()}><Button>Cancel</Button></a
+        >
+        <Button type="submit" useTrackableColors={true}>Save</Button>
+      </div>
+    </form>
+  {/if}
 
   {#if canAddNew}
     <form
@@ -134,12 +156,12 @@
   {/if}
 
   <ul class="mt-4 space-y-4">
-    {#each itemRows as { item, ...i } (item.item_id)}
-      <li class="flex flex-col space-y-2 shadow-lg border border-dgray-800 rounded-lg p-2">
-        <form action={i.updateApiPath} method="POST" use:submit>
+    {#each items as item (item.item_id)}
+      <li class="flex flex-col space-y-2 card shadow-lg border rounded-lg p-2">
+        <form action={`/api/items/${item.item_id}?_method=PATCH`} method="POST" use:submit>
           <p class="flex justify-between space-x-2">
-            <span>{i.date}</span>
-            <span>{i.time}</span>
+            <span>{formatInTimeZone(item.time, item.timezone, 'yyyy-MM-dd')}</span>
+            <span>{formatInTimeZone(item.time, item.timezone, 'h:mm:ss a')}</span>
           </p>
           <Labelled class="mt-2" label="Note">
             <input class="w-full" type="text" name="note" bind:value={item.note} />
@@ -153,7 +175,8 @@
 </section>
 
 <style>
-  li {
+  li,
+  .card {
     border-color: var(--trackable-text-color);
   }
 
