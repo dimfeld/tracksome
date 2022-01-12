@@ -3,12 +3,25 @@ import * as itemDb from '$lib/db/items';
 import { Item } from '$lib/items';
 import { formDataToJson } from '$lib/form';
 import { ReadOnlyFormData } from '@sveltejs/kit/types/helper';
+import { DateGranularity, dateRange } from '$lib/dates';
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 
 export const get: RequestHandler<unknown, Item[]> = async ({ locals, url }) => {
+  let dateParam = url.searchParams.get('date');
+  let baseDate: Date;
+  if (dateParam && dateParam !== 'today') {
+    baseDate = zonedTimeToUtc(dateParam, locals.timezone);
+  } else {
+    baseDate = new Date();
+  }
+  let granularity: DateGranularity = (url.searchParams.get('interval') as DateGranularity) || 'day';
+
+  let { start, end } = dateRange(baseDate, granularity);
+
   let items = await itemDb.getItems({
     userId: locals.userId,
-    startDate: url.searchParams.get('startDate'),
-    endDate: url.searchParams.get('endDate'),
+    startDate: start,
+    endDate: end,
     trackableId: parseNumber(url.searchParams.get('trackableId')),
     timezone: locals.timezone,
   });

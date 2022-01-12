@@ -25,18 +25,7 @@ export function queryStringStore() {
         });
       },
       update(params: Record<string, QsValue | QsValue[]>, replaceState = false, historyState = {}) {
-        let newQuery = new URLSearchParams(p.query);
-
-        for (let [key, value] of Object.entries(params)) {
-          if (Array.isArray(value)) {
-            newQuery.set(key, value[0].toString());
-            for (let v of value.slice(1)) {
-              newQuery.append(key, v.toString());
-            }
-          } else {
-            newQuery.set(key, value.toString());
-          }
-        }
+        let newQuery = updateSearchParams(p.url.searchParams, params);
 
         goto('?' + newQuery.toString(), {
           keepfocus: true,
@@ -47,4 +36,34 @@ export function queryStringStore() {
       },
     };
   });
+}
+
+function updateSearchParams(
+  searchParams: URLSearchParams,
+  params: Record<string, QsValue | QsValue[] | null>
+) {
+  let newQuery = new URLSearchParams(searchParams);
+
+  for (let [key, value] of Object.entries(params)) {
+    if (value === null) {
+      newQuery.delete(key);
+    } else if (Array.isArray(value)) {
+      newQuery.set(key, value[0].toString());
+      for (let v of value.slice(1)) {
+        newQuery.append(key, v.toString());
+      }
+    } else {
+      newQuery.set(key, value.toString());
+    }
+  }
+
+  return newQuery;
+}
+
+export function updateQueryString(url: URL, params: Record<string, QsValue | QsValue[]>) {
+  let newQuery = updateSearchParams(url.searchParams, params);
+
+  let output = new URL(url);
+  output.search = newQuery.toString();
+  return output;
 }

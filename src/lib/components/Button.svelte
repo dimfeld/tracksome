@@ -64,6 +64,11 @@
     border-color: var(--trackable-text-color) !important;
   }
 
+  button.use-trackable-colors:focus {
+    /* --tw-shadow: var(--trackable-text-color) !important; */
+    --tw-ring-color: var(--trackable-text-color) !important;
+  }
+
   button.use-trackable-colors:hover {
     background-color: var(--trackable-hover-bg-color) !important;
     color: var(--trackable-hover-text-color) !important;

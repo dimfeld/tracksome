@@ -59,5 +59,6 @@ export const getSession: GetSession<TracksomeLocals> = (request) => {
     theme: request.locals.theme,
     defaultDarkMode: request.locals.defaultDarkMode,
     randomColor: randomColor(),
+    timezone: request.locals.timezone,
   };
 };

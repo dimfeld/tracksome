@@ -10,7 +10,7 @@ export interface Item {
   modified: string;
 }
 
-export const todayItemsUrl = '/api/items?startDate=today&endDate=today';
+export const todayItemsUrl = '/api/items';
 
 export function newItemSubmit(data: FormData | null, canAddNew: boolean) {
   if (!canAddNew) {

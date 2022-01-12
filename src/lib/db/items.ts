@@ -21,10 +21,10 @@ const fetchColumns = baseColumns.extend(['?item_id']);
 export interface GetItemsOptions {
   userId: number;
   trackableId?: number;
-  startDate?: string | null;
-  endDate?: string | null;
-  startTime?: string | null;
-  endTime?: string | null;
+  startDate?: Date | string | null;
+  endDate?: Date | string | null;
+  startTime?: Date | string | null;
+  endTime?: Date | string | null;
   timezone: string;
 }
 
@@ -53,6 +53,7 @@ export async function getItems(options: GetItemsOptions): Promise<Item[]> {
     wheres.push(dayMatchClause('$[endDate]', '<='));
   }
 
+  console.log('items query', wheres, options);
   return db.query(`SELECT ${fetchColumns.names} FROM items WHERE ${wheres.join(' AND ')}`, {
     ...options,
     timezone,
