@@ -14,7 +14,8 @@ export const get: RequestHandler<unknown, Item[]> = async ({ locals, url }) => {
   } else {
     baseDate = new Date();
   }
-  let granularity: DateGranularity = (url.searchParams.get('interval') as DateGranularity) || 'day';
+  let granularity: DateGranularity =
+    (url.searchParams.get('granularity') as DateGranularity) || 'day';
 
   let { start, end } = dateRange(baseDate, granularity);
 

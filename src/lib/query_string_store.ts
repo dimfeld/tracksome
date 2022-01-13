@@ -17,7 +17,12 @@ export function queryStringStore() {
         });
 
         let newQuery = new URLSearchParams(entries);
-        goto('?' + newQuery.toString(), {
+        let newQs = newQuery.toString();
+        if (newQs === p.url.search) {
+          return;
+        }
+
+        goto('?' + newQs, {
           keepfocus: true,
           noscroll: true,
           replaceState,
@@ -27,7 +32,12 @@ export function queryStringStore() {
       update(params: Record<string, QsValue | QsValue[]>, replaceState = false, historyState = {}) {
         let newQuery = updateSearchParams(p.url.searchParams, params);
 
-        goto('?' + newQuery.toString(), {
+        let newQs = newQuery.toString();
+        if (newQs === p.url.search) {
+          return;
+        }
+
+        goto('?' + newQs, {
           keepfocus: true,
           noscroll: true,
           replaceState,
@@ -39,15 +49,16 @@ export function queryStringStore() {
 }
 
 function updateSearchParams(
-  searchParams: URLSearchParams,
+  searchParams: URLSearchParams | null,
   params: Record<string, QsValue | QsValue[] | null>
 ) {
-  let newQuery = new URLSearchParams(searchParams);
+  let newQuery = new URLSearchParams(searchParams ?? {});
 
   for (let [key, value] of Object.entries(params)) {
     if (value === null) {
       newQuery.delete(key);
     } else if (Array.isArray(value)) {
+      // Use `set` for the first value so that we replace the key if it already existed.
       newQuery.set(key, value[0].toString());
       for (let v of value.slice(1)) {
         newQuery.append(key, v.toString());

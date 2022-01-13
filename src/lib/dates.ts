@@ -99,6 +99,10 @@ export function dateRange(baseDate: Date, granularity: DateGranularity, delta = 
     end = adjustEnd(end);
   }
 
+  if (end.valueOf() < start.valueOf()) {
+    [start, end] = [end, start];
+  }
+
   return { start, end };
 }
 

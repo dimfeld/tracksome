@@ -58,6 +58,7 @@
   } from '$lib/dates';
   import { updateQueryString } from '$lib/query_string_store';
   import { goto } from '$app/navigation';
+  import sorter from 'sorters';
 
   export let trackable: Trackable;
   export let items: Item[];
@@ -65,6 +66,17 @@
   function onUpdateTrackableResponse(res: Response) {
     if (res.ok) {
       goto(updateQueryString($page.url, { edit: null }).toString());
+    }
+  }
+
+  let granularitySelect: HTMLSelectElement;
+  function updateGranularity(e: Event) {
+    let newGranularity = granularitySelect?.value;
+    if (newGranularity !== currentGranularity) {
+      goto(updateQueryString($page.url, { granularity: newGranularity }).toString(), {
+        noscroll: true,
+        keepfocus: true,
+      });
     }
   }
 
@@ -97,24 +109,50 @@
     {/if}
   </h1>
 
-  <p class="font-medium text-dgray-600 text-center">
-    <a sveltekit:prefetch href={updateQueryString($page.url, { date: prevDate }).toString()}>&lt;</a
+  <div
+    class="grid grid-cols-1 grid-rows-1 place-items-stretch font-medium text-dgray-600 text-center"
+  >
+    <div class="g11">
+      <a sveltekit:prefetch href={updateQueryString($page.url, { date: prevDate }).toString()}
+        >&lt;</a
+      >
+      {#if startDateLabel == endDateLabel}
+        {startDateLabel}
+      {:else}
+        {startDateLabel} &mdash; {endDateLabel}
+      {/if}
+      <a sveltekit:prefetch href={updateQueryString($page.url, { date: nextDate }).toString()}
+        >&gt;</a
+      >
+    </div>
+
+    <form
+      class="g11 justify-self-end"
+      method="get"
+      action={updateQueryString($page.url, { granularity: null }).toString()}
+      on:submit|preventDefault={updateGranularity}
     >
-    {#if startDateLabel == endDateLabel}
-      {startDateLabel}
-    {:else}
-      {startDateLabel} &mdash; {endDateLabel}
-    {/if}
-    <a sveltekit:prefetch href={updateQueryString($page.url, { date: nextDate }).toString()}>&gt;</a
-    >
-  </p>
+      <select
+        bind:this={granularitySelect}
+        name="granularity"
+        value={currentGranularity}
+        on:change={updateGranularity}
+      >
+        <option value="day">Day</option>
+        <option value="week">Week</option>
+        <option value="month">Month</option>
+        <option value="7d">7 days</option>
+        <option value="30d">30 days</option>
+      </select>
+    </form>
+  </div>
 
   {#if edit}
     <form
       action={updateTrackablePath}
       method="POST"
       use:submit={{ onResponse: onUpdateTrackableResponse }}
-      class="flex flex-col space-y-4 card shadow-lg border rounded-lg p-2"
+      class="flex flex-col space-y-4 card shadow-lg border rounded-lg p-2 mt-4"
     >
       <h2 class="text-lg font-medium">Editing</h2>
 
@@ -156,7 +194,9 @@
   {/if}
 
   <ul class="mt-4 space-y-4">
-    {#each items as item (item.item_id)}
+    {#each items
+      .slice()
+      .sort(sorter({ value: (i) => i.time, descending: true })) as item (item.item_id)}
       <li class="flex flex-col space-y-2 card shadow-lg border rounded-lg p-2">
         <form action={`/api/items/${item.item_id}?_method=PATCH`} method="POST" use:submit>
           <p class="flex justify-between space-x-2">
@@ -184,5 +224,10 @@
     border-color: var(--trackable-text-color) !important;
     --tw-shadow: var(--trackable-text-color) !important;
     --tw-ring-color: var(--trackable-text-color) !important;
+  }
+
+  .g11 {
+    grid-row: 1;
+    grid-column: 1;
   }
 </style>
