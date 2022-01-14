@@ -10,6 +10,45 @@ export interface Trackable {
   color: string;
 }
 
+export interface TrackableAttributeBase {
+  trackable_attribute_id: number;
+  name: string;
+  enabled: boolean;
+  sort: number;
+}
+
+export interface TrackableAttributeNumber extends TrackableAttributeBase {
+  type: 'number';
+  constraints: {
+    min?: number;
+    max?: number;
+  };
+}
+
+export interface TrackableAttributeText extends TrackableAttributeBase {
+  type: 'text';
+}
+
+export interface TrackableAttributeCategorical extends TrackableAttributeBase {
+  type: 'category';
+}
+
+export type TrackableAttribute =
+  | TrackableAttributeNumber
+  | TrackableAttributeText
+  | TrackableAttributeCategorical;
+
+export function blankAttribute(initialSort: number): TrackableAttribute {
+  return {
+    trackable_attribute_id: -1,
+    name: '',
+    type: 'number',
+    enabled: true,
+    sort: initialSort,
+    constraints: {},
+  };
+}
+
 export function colorVars(color: d3.LabColor) {
   let { bgColor, textColor, hoverTextColor, hoverBgColor } = contrastingColor(color);
 

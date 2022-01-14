@@ -3,11 +3,9 @@ import {
   addDays,
   addMonths,
   addWeeks,
-  endOfDay,
   endOfMonth,
   endOfWeek,
   format,
-  startOfDay,
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
@@ -47,7 +45,7 @@ const granularities: Record<
     add(date: Date, delta: number): Date;
     adjustStart?(date: Date): Date;
     adjustEnd?(date: Date): Date;
-    deltaEndAdjustment?: number;
+    deltaStartAdjustment?: number;
     deltaMultiplier: number;
   }
 > = {
@@ -58,12 +56,12 @@ const granularities: Record<
   '7d': {
     add: addDays,
     deltaMultiplier: 7,
-    deltaEndAdjustment: 1,
+    deltaStartAdjustment: 1,
   },
   '30d': {
     add: addDays,
     deltaMultiplier: 30,
-    deltaEndAdjustment: 1,
+    deltaStartAdjustment: 1,
   },
   week: {
     add: addWeeks,
@@ -83,13 +81,13 @@ export function dateRange(baseDate: Date, granularity: DateGranularity, delta = 
   const {
     add,
     deltaMultiplier,
-    deltaEndAdjustment = 0,
+    deltaStartAdjustment = 0,
     adjustStart,
     adjustEnd,
   } = granularities[granularity] ?? granularities.day;
 
-  let start = add(baseDate, delta * deltaMultiplier);
-  let end = add(baseDate, (delta - deltaEndAdjustment) * deltaMultiplier);
+  let start = add(baseDate, (delta - deltaStartAdjustment) * deltaMultiplier);
+  let end = add(baseDate, delta * deltaMultiplier);
 
   if (adjustStart) {
     start = adjustStart(start);
@@ -107,19 +105,8 @@ export function dateRange(baseDate: Date, granularity: DateGranularity, delta = 
 }
 
 export function addGranularity(baseDate: Date, granularity: DateGranularity, delta: number) {
-  switch (granularity) {
-    default:
-    case 'day':
-      return addDays(baseDate, delta);
-    case 'week':
-      return addWeeks(baseDate, delta);
-    case 'month':
-      return addMonths(baseDate, delta);
-    case '7d':
-      return addDays(baseDate, delta * 7);
-    case '30d':
-      return addDays(baseDate, delta * 30);
-  }
+  let { deltaMultiplier, add } = granularities[granularity] ?? granularities.day;
+  return add(baseDate, delta * deltaMultiplier);
 }
 
 export function dateOrToday(date: string | null, timezone: string): Date {
