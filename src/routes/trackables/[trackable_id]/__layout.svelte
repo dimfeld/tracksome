@@ -8,7 +8,7 @@
       let { trackable_id } = params;
       let [trackable, attributes] = await Promise.all([
         handleJsonResponse(fetch(`/api/trackables/${trackable_id}`)),
-        [],
+        handleJsonResponse(fetch(`/api/trackables/${trackable_id}/attributes`)),
       ]);
 
       return {

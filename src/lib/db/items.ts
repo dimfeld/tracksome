@@ -4,19 +4,22 @@ import * as trackableDb from './trackable';
 
 const baseColumns = new pgp.helpers.ColumnSet(
   [
-    '?trackable_id',
+    { name: 'trackable_id', cnd: true, cast: 'bigint' },
     { name: 'time', cast: 'timestamptz' },
     'timezone',
     'note',
-    '?added',
-    'modified',
+    { name: 'added', cnd: true, cast: 'timestamptz' },
+    { name: 'modified', cast: 'timestamptz ' },
   ],
   { table: 'items' }
 );
 
-const insertColumns = baseColumns.extend(['?user_id']);
-const updateColumns = baseColumns.extend(['?user_id', '?item_id']);
-const fetchColumns = baseColumns.extend(['?item_id']);
+const userIdColumn = { name: 'user_id', cnd: true, cast: 'bigint' };
+const itemIdColumn = { name: 'item_id', cnd: true, cast: 'bigint' };
+
+const insertColumns = baseColumns.extend([userIdColumn]);
+const updateColumns = baseColumns.extend([userIdColumn, itemIdColumn]);
+const fetchColumns = baseColumns.extend([itemIdColumn]);
 
 export interface GetItemsOptions {
   userId: number;

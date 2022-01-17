@@ -13,22 +13,27 @@
     invalidate(`/api/trackables/${trackable.trackable_id}/attributes`);
   }
 
-  $: method = attribute.trackable_attribute_id ? '?_method=PUT' : '';
+  $: baseUrl = `/api/trackables/${trackable.trackable_id}/attributes`;
+  $: action =
+    attribute.trackable_attribute_id >= 0
+      ? `${baseUrl}/${attribute.trackable_attribute_id}?_method=PATCH`
+      : baseUrl;
 </script>
 
 <form
   class="flex flex-col items-stretch space-y-4"
-  action="/api/trackables/{trackable.trackable_id}/attributes/{attribute.trackable_attribute_id}{method}"
+  {action}
   method="POST"
   use:submit={{ onResponse }}
 >
+  <input type="hidden" name="sort" value={attribute.sort} />
   <div class="flex space-x-4">
     <Labelled label="Name" class="flex-1">
-      <input type="text" class="w-full" name="name" bind:value={attribute.name} />
+      <input type="text" class="w-full" name="name" required bind:value={attribute.name} />
     </Labelled>
 
     <Labelled label="Type">
-      <select name="type" bind:value={attribute.type}>
+      <select name="attribute_type" bind:value={attribute.attribute_type}>
         <option value="number">Number</option>
         <option value="text">Text</option>
         <!-- <option value="category">Category</option> -->
@@ -36,7 +41,7 @@
     </Labelled>
   </div>
 
-  {#if attribute.type === 'number'}
+  {#if attribute.attribute_type === 'number'}
     <div class="w-full flex space-x-4 justify-between">
       <Labelled label="Min" class="flex-1">
         <input
@@ -51,7 +56,7 @@
         <input
           type="number"
           class="w-full"
-          name="constraints.min"
+          name="constraints.max"
           bind:value={attribute.constraints.max}
           placeholder="Optional"
         />

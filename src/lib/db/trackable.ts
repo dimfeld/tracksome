@@ -2,13 +2,22 @@ import { db, partialUpdate, pgp } from '$lib/db/client';
 import { Trackable } from '$lib/trackable';
 
 const baseColumns = new pgp.helpers.ColumnSet(
-  ['name', { name: 'enabled', def: true }, 'multiple_per_day', 'sort', 'color'],
+  [
+    'name',
+    { name: 'enabled', def: true },
+    { name: 'multiple_per_day', cast: 'boolean' },
+    { name: 'sort', cast: 'int' },
+    'color',
+  ],
   { table: 'trackables' }
 );
 
-const fetchColumns = baseColumns.extend(['?trackable_id']);
-const insertColumns = baseColumns.extend(['?user_id']);
-const updateColumns = fetchColumns.extend(['?user_id']);
+const userIdColumn = { name: 'user_id', cnd: true, cast: 'bigint' };
+const trackableIdColumn = { name: 'trackable_id', cnd: true, cast: 'bigint' };
+
+const fetchColumns = baseColumns.extend([trackableIdColumn]);
+const insertColumns = baseColumns.extend([userIdColumn]);
+const updateColumns = fetchColumns.extend([userIdColumn]);
 
 export async function getAll(userId: number): Promise<Trackable[]> {
   return db.query(
@@ -32,7 +41,7 @@ export function addTrackable(
   item: Omit<Trackable, 'trackable_id'>
 ): Promise<Trackable> {
   let insertQuery =
-    pgp.helpers.insert({ user_id: userId, ...item, enabled: true }, insertColumns) +
+    pgp.helpers.insert({ ...item, user_id: userId, enabled: true }, insertColumns) +
     ` RETURNING ${fetchColumns.names}`;
   return db.one(insertQuery);
 }

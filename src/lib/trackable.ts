@@ -18,7 +18,7 @@ export interface TrackableAttributeBase {
 }
 
 export interface TrackableAttributeNumber extends TrackableAttributeBase {
-  type: 'number';
+  attribute_type: 'number';
   constraints: {
     min?: number;
     max?: number;
@@ -26,11 +26,11 @@ export interface TrackableAttributeNumber extends TrackableAttributeBase {
 }
 
 export interface TrackableAttributeText extends TrackableAttributeBase {
-  type: 'text';
+  attribute_type: 'text';
 }
 
 export interface TrackableAttributeCategorical extends TrackableAttributeBase {
-  type: 'category';
+  attribute_type: 'category';
 }
 
 export type TrackableAttribute =
@@ -42,7 +42,7 @@ export function blankAttribute(initialSort: number): TrackableAttribute {
   return {
     trackable_attribute_id: -1,
     name: '',
-    type: 'number',
+    attribute_type: 'number',
     enabled: true,
     sort: initialSort,
     constraints: {},

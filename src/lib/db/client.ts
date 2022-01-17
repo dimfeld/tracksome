@@ -34,7 +34,7 @@ export function partialUpdate({
       continue;
     }
 
-    sets.push(`${col.escapedName}=$[${col.name}]`);
+    sets.push(`${col.escapedName}=$[${col.name}]${col.castText}`);
   }
 
   if (!sets.length) {
