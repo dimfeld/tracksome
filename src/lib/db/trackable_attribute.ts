@@ -8,7 +8,7 @@ const baseColumns = new pgp.helpers.ColumnSet(
     { name: 'sort', cast: 'int' },
     { name: 'required', def: false, cast: 'boolean' },
     'attribute_type',
-    { name: 'constraints', cast: 'jsonb' },
+    { name: 'constraints', def: null, cast: 'jsonb' },
   ],
   { table: 'trackable_attributes' }
 );

@@ -1,7 +1,7 @@
 import * as trackableAttributesDb from '$lib/db/trackable_attribute';
 import { RequestHandler } from '$lib/endpoints';
-import { formDataToJson } from '$lib/form';
-import { TrackableAttribute } from '$lib/trackable';
+import { formDataToJson, intFromString } from '$lib/form';
+import { TrackableAttribute, readTrackableAttributeInput } from '$lib/trackable';
 
 export const get: RequestHandler<unknown, TrackableAttribute> = async ({ locals, params }) => {
   const attribute = await trackableAttributesDb.getTrackableAttributes({
@@ -26,7 +26,7 @@ export const patch: RequestHandler<Partial<TrackableAttribute>, TrackableAttribu
   params,
   body,
 }) => {
-  const input = formDataToJson<Partial<TrackableAttribute>>(body);
+  const input = readTrackableAttributeInput(formDataToJson<Partial<TrackableAttribute>>(body));
 
   const output = await trackableAttributesDb.partialUpdateTrackable({
     userId: locals.userId,

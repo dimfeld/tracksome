@@ -1,6 +1,7 @@
 <script lang="ts">
   import { invalidate } from '$app/navigation';
   import Button from '$lib/components/Button.svelte';
+  import Checkbox from '$lib/components/Checkbox.svelte';
 
   import Labelled from '$lib/components/Labelled.svelte';
   import { submit } from '$lib/form';
@@ -63,5 +64,9 @@
       </Labelled>
     </div>
   {/if}
-  <Button type="submit" class="self-end" useTrackableColors>Save</Button>
+
+  <div class="flex justify-between items-center space-x-4">
+    <Checkbox name="enabled" bind:value={attribute.enabled} label="Enabled" />
+    <Button type="submit" class="self-end" useTrackableColors>Save</Button>
+  </div>
 </form>

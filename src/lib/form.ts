@@ -61,17 +61,40 @@ export function fromForm(request: ServerRequest) {
   return request.headers.accept.includes('application/json');
 }
 
-export function formDataToJson<T = unknown>(
-  form: ReadOnlyFormData | T
-): T | Record<string, string> {
+export type AsStrings<O extends object> = {
+  [K in keyof O]: O[K] extends object ? AsStrings<O[K]> : string;
+};
+
+export function formDataToJson<T extends object>(form: ReadOnlyFormData | T): T | AsStrings<T> {
   if (typeof (form as ReadOnlyFormData)?.entries == 'function') {
-    let output: Record<string, string> = {};
+    let output: Partial<AsStrings<T>> = {};
     for (let [key, val] of (form as ReadOnlyFormData).entries()) {
       set(output, key, val);
     }
 
-    return output;
+    return output as AsStrings<T>;
   } else {
-    return form as T;
+    return form as AsStrings<T>;
+  }
+}
+
+export function checkboxToBoolean(s: string | boolean | undefined) {
+  if (typeof s === 'string') {
+    return s === 'on';
+  } else {
+    return s;
+  }
+}
+
+export function intFromString(s: string | number | undefined) {
+  if (typeof s === 'string') {
+    let value = parseInt(s, 10);
+    if (Number.isNaN(value)) {
+      return null;
+    }
+
+    return value;
+  } else {
+    return s;
   }
 }

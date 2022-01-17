@@ -15,9 +15,3 @@
   {/if}
   <slot />
 </section>
-
-<style>
-  section {
-    border-color: var(--trackable-text-color) !important;
-  }
-</style>

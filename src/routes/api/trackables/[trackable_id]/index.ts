@@ -1,3 +1,4 @@
+import { checkboxToBoolean } from '$lib/form';
 import { RequestHandler } from '$lib/endpoints';
 import {
   getTrackable,
@@ -26,6 +27,7 @@ export const put: RequestHandler<Trackable, Trackable> = async ({ locals, body, 
   let result = await updateTrackable(locals.userId, {
     ...(data as Trackable),
     trackable_id: +params.trackable_id,
+    multiple_per_day: checkboxToBoolean(data.multiple_per_day),
   });
 
   if (result) {

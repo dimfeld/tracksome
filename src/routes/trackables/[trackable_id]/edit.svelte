@@ -20,6 +20,7 @@
   import Labelled from '$lib/components/Labelled.svelte';
   import sorter from 'sorters';
   import AttributeEditor from './_AttributeEditor.svelte';
+  import Checkbox from '$lib/components/Checkbox.svelte';
 
   export let trackable: Trackable;
   export let attributes: TrackableAttribute[];
@@ -66,19 +67,25 @@
         </Labelled>
       </div>
 
-      <div class="flex justify-end space-x-2">
-        <Button type="submit" useTrackableColors={true}>Save</Button>
+      <div class="flex justify-between space-x-4">
+        <Checkbox
+          name="multiple_per_day"
+          bind:value={trackable.multiple_per_day}
+          label="Allow Multiple Per Day"
+        />
+
+        <Button type="submit" useTrackableColors>Save</Button>
       </div>
     </form>
   </Card>
 
   {#each attributes as attribute (attribute.trackable_attribute_id)}
-    <Card>
+    <Card label="Attribute {attribute.name}">
       <AttributeEditor {trackable} {attribute} />
     </Card>
   {/each}
 
-  <Card label="New Attribute">
+  <Card label="Add a New Attribute">
     <AttributeEditor {trackable} attribute={blankAttribute(maxSort + 1)} />
   </Card>
 </div>
