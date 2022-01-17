@@ -56,10 +56,27 @@ export async function getItems(options: GetItemsOptions): Promise<Item[]> {
     wheres.push(dayMatchClause('$[endDate]', '<='));
   }
 
-  return db.query(`SELECT ${fetchColumns.names} FROM items WHERE ${wheres.join(' AND ')}`, {
-    ...options,
-    timezone,
-  });
+  // TODO Actually get attribute values
+  return db.query(
+    `SELECT ${fetchColumns.names},
+        COALESCE(
+          jsonb_object_agg(att.item_attribute_value_id,
+            coalesce(to_jsonb(att.numeric_value),
+                  to_jsonb(att.trackable_attribute_category_id),
+                  to_jsonb(att.text_value))
+          ) filter(where att.item_attribute_value_id is not null),
+          '{}'::jsonb
+        ) as attributes
+    FROM items
+    LEFT JOIN item_attribute_values att USING (item_id, user_id)
+    WHERE ${wheres.join(' AND ')}
+    GROUP BY items.item_id
+    `,
+    {
+      ...options,
+      timezone,
+    }
+  );
 }
 
 export async function addItem(userId: number, item: Omit<Item, 'item_id'>): Promise<Item> {
@@ -106,10 +123,12 @@ export async function updateItem(
   itemId: number,
   item: Partial<Item>
 ): Promise<Item | null> {
+  let { attributes, ...itemInput } = item;
+
   let update = partialUpdate({
     columns: updateColumns,
     whereColumns: ['user_id', 'item_id'],
-    data: item,
+    data: itemInput,
     updateModified: true,
   });
 
@@ -117,9 +136,34 @@ export async function updateItem(
     return null;
   }
 
-  return db.oneOrNone(`${update} RETURNING ${fetchColumns.names}`, {
-    ...item,
-    user_id: userId,
-    item_id: itemId,
+  // let attributeItems = Object.entries(attributes || {}).map(([id, value]) => {
+  //   // TODO Need to look up the type of this attribute.
+  //   return {
+  //     trackable_attribute_id: id,
+  //     item_id: itemId,
+  //     user_id: userId,
+  //     numeric_value: typeof value === 'number' ? value : null,
+  //     text_value: typeof value === 'string' ? value : null,
+  //     trackable_attribute_category_id: null,
+  //   };
+  // });
+
+  // let attributeInsert =
+  //   pgp.helpers.insert(attributeItems, { table: 'item_attribute_values' }) +
+  //   `ON CONFLICT (trackable_attribute_id) DO UPDATE set
+  //   numeric_value=EXCLUDED.numeric_value,
+  //   text_value=EXCLUDED.text_value,
+  //   trackable_attribute_category_id=EXCLUDED.trackable_attribute_category_id`;
+
+  let result = await db.tx(async (tx) => {
+    // await tx.query(attributeInsert);
+
+    return tx.oneOrNone(`${update} RETURNING ${fetchColumns.names}`, {
+      ...itemInput,
+      user_id: userId,
+      item_id: itemId,
+    });
   });
+
+  return result;
 }

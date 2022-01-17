@@ -99,7 +99,7 @@ create table item_attribute_values (
 
   numeric_value double precision,
   trackable_attribute_category_id bigint,
-  note text,
+  text_value text,
 
   unique (item_attribute_value_id, user_id),
   foreign key (item_id, user_id) references items (item_id, user_id),

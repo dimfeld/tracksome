@@ -62,7 +62,7 @@ export function fromForm(request: ServerRequest) {
 }
 
 export type AsStrings<O extends object> = {
-  [K in keyof O]: O[K] extends object ? AsStrings<O[K]> : string;
+  [K in keyof O]: O[K] extends object ? AsStrings<O[K]> : O[K] extends string ? O[K] : string;
 };
 
 export function formDataToJson<T extends object>(form: ReadOnlyFormData | T): T | AsStrings<T> {
@@ -74,7 +74,7 @@ export function formDataToJson<T extends object>(form: ReadOnlyFormData | T): T 
 
     return output as AsStrings<T>;
   } else {
-    return form as AsStrings<T>;
+    return form as T;
   }
 }
 
@@ -86,7 +86,7 @@ export function checkboxToBoolean(s: string | boolean | undefined) {
   }
 }
 
-export function intFromString(s: string | number | undefined) {
+export function intFromString(s: string | number | null | undefined) {
   if (typeof s === 'string') {
     let value = parseInt(s, 10);
     if (Number.isNaN(value)) {

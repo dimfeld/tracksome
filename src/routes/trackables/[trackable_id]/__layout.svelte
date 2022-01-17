@@ -3,11 +3,11 @@
 
   import type { Load } from '@sveltejs/kit';
 
-  export const load: Load = async ({ fetch, params }) => {
+  export const load: Load = async ({ fetch, params, stuff }) => {
     try {
       let { trackable_id } = params;
       let [trackable, attributes] = await Promise.all([
-        handleJsonResponse(fetch(`/api/trackables/${trackable_id}`)),
+        handleJsonResponse<Trackable>(fetch(`/api/trackables/${trackable_id}`)),
         handleJsonResponse(fetch(`/api/trackables/${trackable_id}/attributes`)),
       ]);
 
@@ -16,6 +16,7 @@
         stuff: {
           trackable,
           attributes,
+          title: titleSegment(stuff, trackable.name),
         },
       };
     } catch (e) {
@@ -31,6 +32,7 @@
 <script lang="ts">
   import { Trackable, colorVars } from '$lib/trackable';
   import * as d3 from 'd3';
+  import { titleSegment } from '$lib/header';
 
   export let trackable: Trackable;
 

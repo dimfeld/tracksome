@@ -8,6 +8,7 @@ export interface Item {
   note?: string;
   added: string;
   modified: string;
+  attributes: Record<number, string | number>;
 }
 
 export const todayItemsUrl = '/api/items';

@@ -19,6 +19,7 @@
       return {
         props: {
           trackable: stuff.trackable,
+          attributes: stuff.attributes,
           items,
         },
       };
@@ -33,7 +34,7 @@
 </script>
 
 <script lang="ts">
-  import { Trackable, colorVars } from '$lib/trackable';
+  import { Trackable, colorVars, TrackableAttribute } from '$lib/trackable';
   import { Item, newItemSubmit, newItemResponse } from '$lib/items';
   import { formatInTimeZone } from 'date-fns-tz';
   import { page, session } from '$app/stores';
@@ -54,8 +55,10 @@
   import { goto } from '$app/navigation';
   import sorter from 'sorters';
   import { browser } from '$app/env';
+  import Card from '$lib/components/Card.svelte';
 
   export let trackable: Trackable;
+  export let attributes: TrackableAttribute[];
   export let items: Item[];
 
   let granularitySelect: HTMLSelectElement;
@@ -108,7 +111,7 @@
   </h1>
 
   <div
-    class="grid grid-cols-1 grid-rows-1 place-items-stretch font-medium text-dgray-600 text-center"
+    class="grid grid-cols-1 grid-rows-1 place-items-center font-medium text-dgray-600 text-center"
   >
     <div class="g11">
       <a sveltekit:prefetch href={updateQueryString($page.url, { date: prevDate }).toString()}
@@ -164,16 +167,39 @@
     {#each items
       .slice()
       .sort(sorter({ value: (i) => i.time, descending: true })) as item (item.item_id)}
-      <li class="flex flex-col space-y-2 card shadow-lg border rounded-lg p-2">
-        <form action={`/api/items/${item.item_id}?_method=PATCH`} method="POST" use:submit>
-          <p class="flex justify-between space-x-2">
-            <span>{formatInTimeZone(item.time, item.timezone, 'yyyy-MM-dd')}</span>
-            <span>{formatInTimeZone(item.time, item.timezone, 'h:mm:ss a')}</span>
-          </p>
-          <Labelled class="mt-2" label="Note">
-            <input class="w-full" type="text" name="note" bind:value={item.note} />
-          </Labelled>
-        </form>
+      <li>
+        <Card>
+          <form action={`/api/items/${item.item_id}?_method=PATCH`} method="POST" use:submit>
+            <p class="flex justify-between space-x-2">
+              <span>{formatInTimeZone(item.time, item.timezone, 'yyyy-MM-dd')}</span>
+              <span>{formatInTimeZone(item.time, item.timezone, 'h:mm:ss a')}</span>
+            </p>
+            <Labelled class="mt-2" label="Note">
+              <input class="w-full" type="text" name="note" bind:value={item.note} />
+            </Labelled>
+            {#each attributes as attribute (attribute.trackable_attribute_id)}
+              <Labelled class="mt-2" label={attribute.name}>
+                {#if attribute.attribute_type === 'number'}
+                  <input
+                    class="w-full"
+                    type="number"
+                    min={attribute.constraints?.min}
+                    max={attribute.constraints?.max}
+                    name="attribute.{attribute.trackable_attribute_id}"
+                    bind:value={item.attributes[attribute.trackable_attribute_id]}
+                  />
+                {:else if attribute.attribute_type === 'text'}
+                  <input
+                    class="w-full"
+                    type="text"
+                    name="attribute.{attribute.trackable_attribute_id}"
+                    bind:value={item.attributes[attribute.trackable_attribute_id]}
+                  />
+                {/if}
+              </Labelled>
+            {/each}
+          </form>
+        </Card>
       </li>
     {:else}
       <li>No items recorded in this period</li>
@@ -182,11 +208,6 @@
 </section>
 
 <style>
-  li,
-  .card {
-    border-color: var(--trackable-text-color);
-  }
-
   input:focus {
     border-color: var(--trackable-text-color) !important;
     --tw-shadow: var(--trackable-text-color) !important;

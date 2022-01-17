@@ -1,15 +1,5 @@
-import { Writable } from 'svelte/store';
-import { writable } from 'svelte/store';
-import { getContext, setContext } from 'svelte';
+import { page } from '$app/stores';
 
-const HEADER_TEXT = 'ergoHeaderTextStore';
-
-export function createHeaderTextStore(): Writable<string[]> {
-  let s = writable([]);
-  setContext(HEADER_TEXT, s);
-  return s;
-}
-
-export function getHeaderTextStore(): Writable<string[]> {
-  return getContext(HEADER_TEXT);
+export function titleSegment(stuff: Record<string, any>, segment: string) {
+  return [...(stuff.title || []), segment];
 }

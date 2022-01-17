@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { contrastingColor } from './colors';
-import { intFromString } from './form';
+import { AsStrings, intFromString } from './form';
 
 export interface Trackable {
   trackable_id: number;
@@ -61,7 +61,9 @@ export function colorVars(color: d3.LabColor) {
   ].join(';');
 }
 
-export function readTrackableAttributeInput(input: TrackableAttribute) {
+export function readTrackableAttributeInput(
+  input: TrackableAttribute | AsStrings<TrackableAttribute>
+) {
   if (input.attribute_type === 'number' && input.constraints) {
     input.constraints = {
       min: intFromString(input.constraints.min),

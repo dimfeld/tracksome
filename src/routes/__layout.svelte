@@ -18,7 +18,7 @@
     }
 
     return {
-      stuff: { user },
+      stuff: { user, title: ['TrackSome'] },
       props: { user },
     };
   };
@@ -35,6 +35,7 @@
   import { SvelteToast } from '@zerodevx/svelte-toast';
   import { toastStore } from '$lib/toast';
   import { browser } from '$app/env';
+  import { page } from '$app/stores';
 
   let userProp: User | null;
   export { userProp as user };
@@ -54,6 +55,10 @@
     intro: { y: 100 },
   };
 </script>
+
+<svelte:head>
+  <title>{$page.stuff.title.slice().reverse().join(' - ')}</title>
+</svelte:head>
 
 <div id="tracksome-top" class:dark={$darkMode}>
   <div
