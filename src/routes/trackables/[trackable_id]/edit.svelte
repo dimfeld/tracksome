@@ -82,7 +82,7 @@
   {#each attributes as attribute (attribute.trackable_attribute_id)}
     <Card>
       <span slot="label"
-        ><span class="font-normal text-dgray-800">Edit Attribute</span> {attribute.name}</span
+        ><span class="font-normal text-dgray-800 mr-2">Edit Attribute</span> {attribute.name}</span
       >
       <AttributeEditor {trackable} {attribute} />
     </Card>

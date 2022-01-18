@@ -1,5 +1,5 @@
 import { db, partialUpdate, pgp } from '$lib/db/client';
-import { Trackable, TrackableAttribute } from '$lib/trackable';
+import { Trackable, TrackableAttribute, TrackableAttributeCategory } from '$lib/trackable';
 
 const baseColumns = new pgp.helpers.ColumnSet(
   [
@@ -33,7 +33,19 @@ export function getTrackableAttributes(options: {
   }
 
   return db.query(
-    `SELECT ${fetchColumns.names} FROM trackable_attributes WHERE ${wheres.join(' AND ')}`,
+    `SELECT ${fetchColumns.columns.map((c) => 'att.' + c.escapedName).join(',')},
+      COALESCE(jsonb_object_agg(
+        cats.trackable_attribute_category_id,
+        jsonb_build_object(
+          'name', cats.name,
+          'color', cats.color,
+          'sort', cats.sort
+        )
+      ) FILTER(WHERE cats.trackable_attribute_category_id IS NOT NULL AND cats.enabled), '{}'::jsonb) as categories
+    FROM trackable_attributes att
+    LEFT JOIN trackable_attribute_categories cats USING (user_id, trackable_attribute_id)
+    WHERE ${wheres.join(' AND ')}
+    GROUP BY att.trackable_attribute_id`,
     {
       user_id: options.userId,
       trackable_id: options.trackableId,

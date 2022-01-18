@@ -61,18 +61,22 @@ export function fromForm(request: ServerRequest) {
   return request.headers.accept.includes('application/json');
 }
 
-export type AsStrings<O extends object> = {
-  [K in keyof O]: O[K] extends object ? AsStrings<O[K]> : O[K] extends string ? O[K] : string;
+export type WithStrings<O extends object> = {
+  [K in keyof O]: O[K] extends object
+    ? WithStrings<O[K]>
+    : O[K] extends string // don't add string to types like 'a'|'b'|'c'
+    ? O[K]
+    : string | O[K];
 };
 
-export function formDataToJson<T extends object>(form: ReadOnlyFormData | T): T | AsStrings<T> {
+export function formDataToJson<T extends object>(form: ReadOnlyFormData | T): T | WithStrings<T> {
   if (typeof (form as ReadOnlyFormData)?.entries == 'function') {
-    let output: Partial<AsStrings<T>> = {};
+    let output: Partial<WithStrings<T>> = {};
     for (let [key, val] of (form as ReadOnlyFormData).entries()) {
       set(output, key, val);
     }
 
-    return output as AsStrings<T>;
+    return output as WithStrings<T>;
   } else {
     return form as T;
   }
@@ -86,7 +90,7 @@ export function checkboxToBoolean(s: string | boolean | undefined) {
   }
 }
 
-export function intFromString(s: string | number | null | undefined) {
+export function intFromString(s: string | number | null | undefined): number | null | undefined {
   if (typeof s === 'string') {
     let value = parseInt(s, 10);
     if (Number.isNaN(value)) {

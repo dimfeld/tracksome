@@ -14,11 +14,9 @@
     invalidate(`/api/trackables/${trackable.trackable_id}/attributes`);
   }
 
+  $: isNew = attribute.trackable_attribute_id < 0;
   $: baseUrl = `/api/trackables/${trackable.trackable_id}/attributes`;
-  $: action =
-    attribute.trackable_attribute_id >= 0
-      ? `${baseUrl}/${attribute.trackable_attribute_id}?_method=PATCH`
-      : baseUrl;
+  $: action = isNew ? baseUrl : `${baseUrl}/${attribute.trackable_attribute_id}?_method=PATCH`;
 
   $: maxCategorySort =
     'categories' in attribute
@@ -76,23 +74,28 @@
   </div>
 </form>
 
-{#if attribute.attribute_type === 'category'}
+{#if attribute.attribute_type === 'category' && !isNew}
   <Labelled label="Categories" class="mt-6">
     <ul class="w-full flex flex-col space-y-2 pt-4">
       {#each Object.entries(attribute.categories || []) as [category_id, category] (category_id)}
         {@const action = `${baseUrl}/${attribute.trackable_attribute_id}/categories/${category_id}`}
-        <li class="flex space-x-2">
-          <form class="w-full flex space-x-2" action="{action}?_method=PATCH" method="POST">
+        <li class="flex space-x-2 items-stretch">
+          <form
+            class="w-full flex space-x-2"
+            action="{action}?_method=PATCH"
+            method="POST"
+            use:submit={{ onResponse }}
+          >
             <label class="flex-1">
               <input type="text" class="w-full" name="name" value={category.name} />
               <span class="sr-only">Category Name</span>
             </label>
             <input type="color" name="color" value={category.color} class="bg-transparent h-10" />
-            <button type="submit">Save</button>
+            <Button type="submit">Save</Button>
             <input type="hidden" name="sort" value={category.sort} />
           </form>
-          <form action="{action}?_method=_DELETE" method="POST">
-            <button type="submit">Delete</button>
+          <form action="{action}?_method=DELETE" method="POST" use:submit={{ onResponse }}>
+            <Button type="submit" class="h-full">Delete</Button>
           </form>
         </li>
       {/each}
@@ -101,6 +104,14 @@
           class="w-full flex space-x-2 items-center"
           action="{baseUrl}/{attribute.trackable_attribute_id}/categories"
           method="POST"
+          use:submit={{
+            onResponse: (res, form) => {
+              if (res.ok) {
+                form.reset();
+                onResponse();
+              }
+            },
+          }}
         >
           <label class="flex-1">
             <input type="text" class="w-full" placeholder="New Category" name="name" />
