@@ -92,7 +92,6 @@ create table items (
 create index on items(user_id, time, trackable_id);
 
 create table item_attribute_values (
-  item_attribute_value_id bigint generated always as identity,
   item_id bigint not null,
   trackable_attribute_id bigint not null references trackable_attributes,
   user_id bigint not null references users,
@@ -101,8 +100,10 @@ create table item_attribute_values (
   trackable_attribute_category_id bigint,
   text_value text,
 
-  unique (item_attribute_value_id, user_id),
+  primary key (item_id, trackable_attribute_id),
+  unique (item_id, trackable_attribute_id, user_id),
   foreign key (item_id, user_id) references items (item_id, user_id),
+  foreign key (trackable_attribute_id, user_id) references trackable_attributes (trackable_attribute_id, user_id),
   foreign key (trackable_attribute_id, trackable_attribute_category_id, user_id) references trackable_attribute_categories (trackable_attribute_id, trackable_attribute_category_id, user_id)
 );
 

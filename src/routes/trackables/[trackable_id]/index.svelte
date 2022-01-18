@@ -56,6 +56,7 @@
   import sorter from 'sorters';
   import { browser } from '$app/env';
   import Card from '$lib/components/Card.svelte';
+  import ItemEditor from '$lib/components/ItemEditor.svelte';
 
   export let trackable: Trackable;
   export let attributes: TrackableAttribute[];
@@ -169,36 +170,7 @@
       .sort(sorter({ value: (i) => i.time, descending: true })) as item (item.item_id)}
       <li>
         <Card>
-          <form action={`/api/items/${item.item_id}?_method=PATCH`} method="POST" use:submit>
-            <p class="flex justify-between space-x-2">
-              <span>{formatInTimeZone(item.time, item.timezone, 'yyyy-MM-dd')}</span>
-              <span>{formatInTimeZone(item.time, item.timezone, 'h:mm:ss a')}</span>
-            </p>
-            <Labelled class="mt-2" label="Note">
-              <input class="w-full" type="text" name="note" bind:value={item.note} />
-            </Labelled>
-            {#each attributes as attribute (attribute.trackable_attribute_id)}
-              <Labelled class="mt-2" label={attribute.name}>
-                {#if attribute.attribute_type === 'number'}
-                  <input
-                    class="w-full"
-                    type="number"
-                    min={attribute.constraints?.min}
-                    max={attribute.constraints?.max}
-                    name="attribute.{attribute.trackable_attribute_id}"
-                    bind:value={item.attributes[attribute.trackable_attribute_id]}
-                  />
-                {:else if attribute.attribute_type === 'text'}
-                  <input
-                    class="w-full"
-                    type="text"
-                    name="attribute.{attribute.trackable_attribute_id}"
-                    bind:value={item.attributes[attribute.trackable_attribute_id]}
-                  />
-                {/if}
-              </Labelled>
-            {/each}
-          </form>
+          <ItemEditor {item} {attributes} />
         </Card>
       </li>
     {:else}

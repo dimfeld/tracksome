@@ -48,6 +48,7 @@
 		"dotenv": "^10.0.0",
 		"flru": "^1.0.2",
 		"just-group-by": "^2.0.1",
+		"just-partition": "^2.0.1",
 		"just-safe-set": "^4.0.2",
 		"pg-promise": "^10.11.1",
 		"sorters": "^1.0.0",

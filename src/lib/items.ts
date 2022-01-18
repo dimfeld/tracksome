@@ -8,7 +8,14 @@ export interface Item {
   note?: string;
   added: string;
   modified: string;
-  attributes: Record<number, string | number>;
+  /** attributes for this item, keyed by trackable_attribute_id */
+  attributes: Record<number, ItemAttributeValue>;
+}
+
+export interface ItemAttributeValue {
+  numeric_value?: number;
+  text_value?: string;
+  trackable_attribute_category_id?: number;
 }
 
 export const todayItemsUrl = '/api/items';

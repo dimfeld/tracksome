@@ -1,4 +1,6 @@
+import { intFromString } from '$lib/form';
 import { Item } from '$lib/items';
+import partition from 'just-partition';
 import { db, partialUpdate, pgp } from './client';
 import * as trackableDb from './trackable';
 
@@ -20,6 +22,18 @@ const itemIdColumn = { name: 'item_id', cnd: true, cast: 'bigint' };
 const insertColumns = baseColumns.extend([userIdColumn]);
 const updateColumns = baseColumns.extend([userIdColumn, itemIdColumn]);
 const fetchColumns = baseColumns.extend([itemIdColumn]);
+
+const updateAttributeColumns = new pgp.helpers.ColumnSet(
+  [
+    { name: 'item_id', cnd: true, cast: 'bigint' },
+    { name: 'trackable_attribute_id', cnd: true, cast: 'bigint' },
+    { name: 'user_id', cnd: true, cast: 'bigint' },
+    { name: 'numeric_value', cast: 'double precision' },
+    { name: 'trackable_attribute_category_id', cast: 'bigint' },
+    { name: 'text_value' },
+  ],
+  { table: 'item_attribute_values' }
+);
 
 export interface GetItemsOptions {
   userId: number;
@@ -56,15 +70,16 @@ export async function getItems(options: GetItemsOptions): Promise<Item[]> {
     wheres.push(dayMatchClause('$[endDate]', '<='));
   }
 
-  // TODO Actually get attribute values
   return db.query(
     `SELECT ${fetchColumns.names},
         COALESCE(
-          jsonb_object_agg(att.item_attribute_value_id,
-            coalesce(to_jsonb(att.numeric_value),
-                  to_jsonb(att.trackable_attribute_category_id),
-                  to_jsonb(att.text_value))
-          ) filter(where att.item_attribute_value_id is not null),
+          jsonb_strip_nulls(jsonb_object_agg(att.trackable_attribute_id,
+            jsonb_build_object(
+              'numeric_value', att.numeric_value,
+              'trackable_attribute_category_id', att.trackable_attribute_category_id,
+              'text_value', att.text_value
+            )
+          ) filter(where att.trackable_attribute_id is not null)),
           '{}'::jsonb
         ) as attributes
     FROM items
@@ -132,37 +147,63 @@ export async function updateItem(
     updateModified: true,
   });
 
-  if (!update) {
+  let attributeItems = Object.entries(attributes || {}).map(([id, value]) => {
+    return {
+      trackable_attribute_id: id,
+      item_id: itemId,
+      user_id: userId,
+      numeric_value: intFromString(value.numeric_value),
+      text_value: value.text_value,
+      trackable_attribute_category_id: null,
+    };
+  });
+
+  const [withValue, withoutValue] = partition(
+    attributeItems,
+    (item) =>
+      typeof item.numeric_value === 'number' ||
+      Boolean(item.text_value) ||
+      typeof item.trackable_attribute_category_id === 'number'
+  );
+
+  if (!update && !attributeItems.length) {
     return null;
   }
 
-  // let attributeItems = Object.entries(attributes || {}).map(([id, value]) => {
-  //   // TODO Need to look up the type of this attribute.
-  //   return {
-  //     trackable_attribute_id: id,
-  //     item_id: itemId,
-  //     user_id: userId,
-  //     numeric_value: typeof value === 'number' ? value : null,
-  //     text_value: typeof value === 'string' ? value : null,
-  //     trackable_attribute_category_id: null,
-  //   };
-  // });
-
-  // let attributeInsert =
-  //   pgp.helpers.insert(attributeItems, { table: 'item_attribute_values' }) +
-  //   `ON CONFLICT (trackable_attribute_id) DO UPDATE set
-  //   numeric_value=EXCLUDED.numeric_value,
-  //   text_value=EXCLUDED.text_value,
-  //   trackable_attribute_category_id=EXCLUDED.trackable_attribute_category_id`;
+  let attributeInsert = withValue.length
+    ? pgp.helpers.insert(withValue, updateAttributeColumns) +
+      `ON CONFLICT (item_id, trackable_attribute_id) DO UPDATE SET
+      numeric_value=EXCLUDED.numeric_value,
+      text_value=EXCLUDED.text_value,
+      trackable_attribute_category_id=EXCLUDED.trackable_attribute_category_id`
+    : '';
 
   let result = await db.tx(async (tx) => {
-    // await tx.query(attributeInsert);
+    if (attributeInsert) {
+      await tx.query(attributeInsert);
+    }
 
-    return tx.oneOrNone(`${update} RETURNING ${fetchColumns.names}`, {
-      ...itemInput,
-      user_id: userId,
-      item_id: itemId,
-    });
+    if (withoutValue.length) {
+      await tx.query(
+        `DELETE FROM ${updateAttributeColumns.table.name}
+        WHERE user_id=$[user_id] AND item_id=$[item_id] AND trackable_attribute_id = ANY($[ids])`,
+        {
+          user_id: userId,
+          item_id: itemId,
+          ids: withoutValue.map((v) => +v.trackable_attribute_id),
+        }
+      );
+    }
+
+    if (update) {
+      return tx.oneOrNone(`${update} RETURNING ${fetchColumns.names}`, {
+        ...itemInput,
+        user_id: userId,
+        item_id: itemId,
+      });
+    } else {
+      return null;
+    }
   });
 
   return result;
