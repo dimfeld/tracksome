@@ -19,6 +19,11 @@
     attribute.trackable_attribute_id >= 0
       ? `${baseUrl}/${attribute.trackable_attribute_id}?_method=PATCH`
       : baseUrl;
+
+  $: maxCategorySort =
+    'categories' in attribute
+      ? Object.values(attribute.categories).reduce((acc, x) => Math.max(acc, x.sort), 0)
+      : 0;
 </script>
 
 <form
@@ -37,7 +42,7 @@
       <select name="attribute_type" bind:value={attribute.attribute_type}>
         <option value="number">Number</option>
         <option value="text">Text</option>
-        <!-- <option value="category">Category</option> -->
+        <option value="category">Category</option>
       </select>
     </Labelled>
   </div>
@@ -70,3 +75,42 @@
     <Button type="submit" class="self-end" useTrackableColors>Save</Button>
   </div>
 </form>
+
+{#if attribute.attribute_type === 'category'}
+  <Labelled label="Categories" class="mt-6">
+    <ul class="w-full flex flex-col space-y-2 pt-4">
+      {#each Object.entries(attribute.categories || []) as [category_id, category] (category_id)}
+        {@const action = `${baseUrl}/${attribute.trackable_attribute_id}/categories/${category_id}`}
+        <li class="flex space-x-2">
+          <form class="w-full flex space-x-2" action="{action}?_method=PATCH" method="POST">
+            <label class="flex-1">
+              <input type="text" class="w-full" name="name" value={category.name} />
+              <span class="sr-only">Category Name</span>
+            </label>
+            <input type="color" name="color" value={category.color} class="bg-transparent h-10" />
+            <button type="submit">Save</button>
+            <input type="hidden" name="sort" value={category.sort} />
+          </form>
+          <form action="{action}?_method=_DELETE" method="POST">
+            <button type="submit">Delete</button>
+          </form>
+        </li>
+      {/each}
+      <li class="w-full">
+        <form
+          class="w-full flex space-x-2 items-center"
+          action="{baseUrl}/{attribute.trackable_attribute_id}/categories"
+          method="POST"
+        >
+          <label class="flex-1">
+            <input type="text" class="w-full" placeholder="New Category" name="name" />
+            <span class="sr-only">New Category Name</span>
+          </label>
+          <input type="color" name="color" value="#808080" class="bg-transparent h-10" />
+          <Button type="submit">Add</Button>
+          <input type="hidden" name="sort" value={maxCategorySort + 1} />
+        </form>
+      </li>
+    </ul>
+  </Labelled>
+{/if}

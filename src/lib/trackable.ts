@@ -32,12 +32,19 @@ export interface TrackableAttributeText extends TrackableAttributeBase {
 
 export interface TrackableAttributeCategorical extends TrackableAttributeBase {
   attribute_type: 'category';
+  categories: Record<number, TrackableAttributeCategory>;
 }
 
 export type TrackableAttribute =
   | TrackableAttributeNumber
   | TrackableAttributeText
   | TrackableAttributeCategorical;
+
+export interface TrackableAttributeCategory {
+  name: string;
+  sort: number;
+  color: string;
+}
 
 export function blankAttribute(initialSort: number): TrackableAttribute {
   return {

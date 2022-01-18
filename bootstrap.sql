@@ -67,6 +67,7 @@ create table trackable_attribute_categories (
   enabled boolean not null default true,
   name text not null,
   color text not null,
+  sort int not null,
 
   unique (trackable_attribute_category_id, trackable_attribute_id, user_id),
   foreign key (trackable_attribute_id, user_id) references trackable_attributes (trackable_attribute_id, user_id)
