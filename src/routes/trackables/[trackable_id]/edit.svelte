@@ -80,7 +80,10 @@
   </Card>
 
   {#each attributes as attribute (attribute.trackable_attribute_id)}
-    <Card label="Attribute {attribute.name}">
+    <Card>
+      <span slot="label"
+        ><span class="font-normal text-dgray-800">Edit Attribute</span> {attribute.name}</span
+      >
       <AttributeEditor {trackable} {attribute} />
     </Card>
   {/each}

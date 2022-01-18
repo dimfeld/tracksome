@@ -10,6 +10,9 @@
 
   input[type='text'],
   input[type='number'],
+  input[type='date'],
+  input[type='time'],
+  input[type='datetime'],
   textarea {
     @apply bg-white dark:bg-gray-800 focus:ring-accent-500 focus:border-accent-500 sm:text-sm rounded-md;
   }
@@ -17,4 +20,8 @@
   .label {
     @apply text-sm font-medium text-gray-700 dark:text-gray-300;
   }
+}
+
+.dark input::-webkit-calendar-picker-indicator {
+  filter: invert(100%);
 }

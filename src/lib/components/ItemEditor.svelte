@@ -10,9 +10,14 @@
 </script>
 
 <form action="/api/items/{item.item_id}?_method=PATCH" method="POST" use:submit>
+  <input type="hidden" name="timezone" value={item.timezone} />
   <p class="flex justify-between space-x-2">
-    <span>{formatInTimeZone(item.time, item.timezone, 'yyyy-MM-dd')}</span>
-    <span>{formatInTimeZone(item.time, item.timezone, 'h:mm:ss a')}</span>
+    <input
+      type="date"
+      name="date"
+      value={formatInTimeZone(item.time, item.timezone, 'yyyy-MM-dd')}
+    />
+    <input type="time" name="time" value={formatInTimeZone(item.time, item.timezone, 'HH:mm')} />
   </p>
   <Labelled class="mt-2" label="Note">
     <input class="w-full" type="text" name="note" bind:value={item.note} />

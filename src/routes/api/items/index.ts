@@ -46,6 +46,7 @@ export const post: RequestHandler<Item | ReadOnlyFormData, Item | null> = async 
     note: data.note || '',
     added: nowUtc,
     modified: nowUtc,
+    attributes: {},
   };
 
   let item = await itemDb.addItemIfUnderDailyLimit(locals.userId, newItem);

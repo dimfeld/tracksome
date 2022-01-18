@@ -10,8 +10,10 @@
   class="w-full p-4 rounded-lg border border-gray-200 dark:border-gray-400 shadow-md {classNames ||
     ''}"
 >
-  {#if label}
-    <header class="font-bold text-gray-700 dark:text-gray-300 mb-4">{label}</header>
+  {#if label || $$slots.label}
+    <header class="font-bold text-gray-700 dark:text-gray-300 mb-4">
+      <slot name="label">{label}</slot>
+    </header>
   {/if}
   <slot />
 </section>
