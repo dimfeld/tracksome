@@ -6,9 +6,8 @@ import { zonedTimeToUtc } from 'date-fns-tz';
 import { parse as parseDate } from 'date-fns';
 
 export const patch: RequestHandler<Item, {}> = async (request) => {
-  let data = formDataToJson<Partial<Item & { date: string }>>(request.body);
-
-  let { date, ...item } = data;
+  let input = formDataToJson<Partial<Item & { date: string }>>(request.body);
+  let { date, ...item } = input;
 
   if (date && item.time && item.timezone) {
     let newTime = parseDate(`${date} ${item.time}`, 'yyyy-MM-dd HH:mm', new Date());
