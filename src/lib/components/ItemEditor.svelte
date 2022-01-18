@@ -69,7 +69,9 @@
         <select
           class="w-full"
           name="attributes.{attribute.trackable_attribute_id}.trackable_attribute_category_id"
+          value={item.attributes[attribute.trackable_attribute_id]}
         >
+          <option value={null} />
           {#each categoryList(attribute) as category (category.id)}
             <option value={category.id}>{category.name}</option>
           {/each}
