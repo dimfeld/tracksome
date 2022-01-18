@@ -3,14 +3,39 @@
   import { Item } from '$lib/items';
   import { TrackableAttribute } from '$lib/trackable';
   import { formatInTimeZone } from 'date-fns-tz';
+  import sorter from 'sorters';
   import Labelled from './Labelled.svelte';
 
   export let item: Item;
   export let attributes: TrackableAttribute[];
+
+  function categoryList(attribute: TrackableAttribute) {
+    if (attribute.attribute_type !== 'category') {
+      return [];
+    }
+
+    return Object.entries(attribute.categories)
+      .map(([id, cat]) => {
+        return {
+          id,
+          ...cat,
+        };
+      })
+      .sort(
+        sorter(
+          (c) => c.sort,
+          (c) => c.name
+        )
+      );
+  }
 </script>
 
-<form action="/api/items/{item.item_id}?_method=PATCH" method="POST" use:submit>
-  <input type="hidden" name="timezone" value={item.timezone} />
+<form
+  action="/api/items/{item.item_id}?_method=PATCH"
+  method="POST"
+  use:submit
+  class="flex flex-col items-stretch space-y-4"
+>
   <p class="flex justify-between space-x-2">
     <input
       type="date"
@@ -40,8 +65,18 @@
           name="attributes.{attribute.trackable_attribute_id}.text_value"
           value={item.attributes[attribute.trackable_attribute_id]?.text_value ?? ''}
         />
+      {:else if attribute.attribute_type === 'category'}
+        <select
+          class="w-full"
+          name="attributes.{attribute.trackable_attribute_id}.trackable_attribute_category_id"
+        >
+          {#each categoryList(attribute) as category (category.id)}
+            <option value={category.id}>{category.name}</option>
+          {/each}
+        </select>
       {/if}
     </Labelled>
   {/each}
   <input type="submit" class="hidden" />
+  <input type="hidden" name="timezone" value={item.timezone} />
 </form>

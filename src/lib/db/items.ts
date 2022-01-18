@@ -154,7 +154,7 @@ export async function updateItem(
       user_id: userId,
       numeric_value: intFromString(value.numeric_value),
       text_value: value.text_value?.length ? value.text_value : null,
-      trackable_attribute_category_id: null,
+      trackable_attribute_category_id: intFromString(value.trackable_attribute_category_id),
     };
   });
 
