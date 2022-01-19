@@ -3,7 +3,7 @@ import type { ServerRequest } from '@sveltejs/kit/types/hooks';
 import set from 'just-safe-set';
 
 export interface SubmitActionOptions {
-  onSubmit?: (body: FormData | null) => boolean | undefined;
+  onSubmit?: (body: FormData | null, event: SubmitEvent) => Promise<boolean> | boolean | undefined;
   onResponse?: (response: Response, form: HTMLFormElement) => void;
   allowMultipleConcurrent?: boolean;
 }
@@ -28,12 +28,14 @@ export function submit(
 
       const body = node.method === 'post' || node.method === 'put' ? new FormData(node) : null;
 
-      let ok = onSubmit?.(body) ?? true;
+      let ok = onSubmit ? (await onSubmit(body, event)) ?? true : true;
       if (!ok) {
         return;
       }
 
-      const response = await fetch(node.action, {
+      const action = (event.submitter as HTMLButtonElement)?.formAction ?? node.action;
+
+      const response = await fetch(action, {
         method: node.method,
         body,
         redirect: 'manual',

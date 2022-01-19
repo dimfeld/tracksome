@@ -2,6 +2,8 @@
   import { invalidate } from '$app/navigation';
   import Button from '$lib/components/Button.svelte';
   import Checkbox from '$lib/components/Checkbox.svelte';
+  import Icon from '$lib/components/Icon.svelte';
+  import { xSolid } from '$lib/components/icons';
 
   import Labelled from '$lib/components/Labelled.svelte';
   import { submit } from '$lib/form';
@@ -91,11 +93,16 @@
               <span class="sr-only">Category Name</span>
             </label>
             <input type="color" name="color" value={category.color} class="bg-transparent h-10" />
-            <Button type="submit">Save</Button>
+            <Button
+              type="submit"
+              formaction="{action}?_method=DELETE"
+              class="h-full"
+              style="danger"
+              title="Delete"
+              iconButton><Icon icon={xSolid} /></Button
+            >
+            <Button type="submit" useTrackableColors>Save</Button>
             <input type="hidden" name="sort" value={category.sort} />
-          </form>
-          <form action="{action}?_method=DELETE" method="POST" use:submit={{ onResponse }}>
-            <Button type="submit" class="h-full">Delete</Button>
           </form>
         </li>
       {/each}
@@ -118,7 +125,7 @@
             <span class="sr-only">New Category Name</span>
           </label>
           <input type="color" name="color" value="#808080" class="bg-transparent h-10" />
-          <Button type="submit">Add</Button>
+          <Button type="submit" useTrackableColors>Add</Button>
           <input type="hidden" name="sort" value={maxCategorySort + 1} />
         </form>
       </li>
