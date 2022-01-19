@@ -140,11 +140,11 @@
         value={currentGranularity}
         on:change={updateGranularity}
       >
-        <option value="day">Day</option>
-        <option value="week">Week</option>
-        <option value="month">Month</option>
-        <option value="7d">7 days</option>
-        <option value="30d">30 days</option>
+        <option value="day" selected={currentGranularity === 'day'}>Day</option>
+        <option value="week" selected={currentGranularity === 'week'}>Week</option>
+        <option value="month" selected={currentGranularity === 'month'}>Month</option>
+        <option value="7d" selected={currentGranularity === '7d'}>7 days</option>
+        <option value="30d" selected={currentGranularity === '30d'}>30 days</option>
       </select>
     </form>
   </div>

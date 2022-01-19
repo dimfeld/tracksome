@@ -39,10 +39,11 @@
     </Labelled>
 
     <Labelled label="Type">
-      <select name="attribute_type" bind:value={attribute.attribute_type}>
-        <option value="number">Number</option>
-        <option value="text">Text</option>
-        <option value="category">Category</option>
+      <select name="attribute_type" value={attribute.attribute_type}>
+        <option value="number" selected={attribute.attribute_type === 'number'}>Number</option>
+        <option value="text" selected={attribute.attribute_type === 'text'}>Text</option>
+        <option value="category" selected={attribute.attribute_type === 'category'}>Category</option
+        >
       </select>
     </Labelled>
   </div>

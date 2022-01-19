@@ -30,9 +30,9 @@
       {/if}
     </button>
     <select class="ml-2 text-xs h-8" bind:value={$darkModeStore}>
-      <option value={Theme.Dark}>Dark</option>
-      <option value={Theme.Light}>Light</option>
-      <option value={Theme.System}>System</option>
+      <option value={Theme.Dark} selected={$darkModeStore === Theme.Dark}>Dark</option>
+      <option value={Theme.Light} selected={$darkModeStore === Theme.Light}>Light</option>
+      <option value={Theme.System} selected={$darkModeStore === Theme.System}>System</option>
     </select>
   </div>
 </nav>
