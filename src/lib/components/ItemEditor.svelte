@@ -17,7 +17,7 @@
     return Object.entries(attribute.categories)
       .map(([id, cat]) => {
         return {
-          id,
+          id: +id,
           ...cat,
         };
       })
@@ -69,11 +69,15 @@
         <select
           class="w-full"
           name="attributes.{attribute.trackable_attribute_id}.trackable_attribute_category_id"
-          value={item.attributes[attribute.trackable_attribute_id]}
+          value={item.attributes[attribute.trackable_attribute_id]?.trackable_attribute_category_id}
         >
           <option value={null} />
           {#each categoryList(attribute) as category (category.id)}
-            <option value={category.id}>{category.name}</option>
+            <option
+              value={category.id}
+              selected={item.attributes[attribute.trackable_attribute_id]
+                ?.trackable_attribute_category_id == category.id}>{category.name}</option
+            >
           {/each}
         </select>
       {/if}

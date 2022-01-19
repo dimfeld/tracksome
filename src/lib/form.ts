@@ -33,7 +33,11 @@ export function submit(
         return;
       }
 
-      const action = (event.submitter as HTMLButtonElement)?.formAction ?? node.action;
+      // Have to use `getAttribute` here. When the `formaction` attribute is not set, `event.submitter.formAction` will
+      // return the current document's URL instead of the form's action if it isn't overridden, but we want it to return
+      // nothing and use the form's action instead.
+      const action =
+        (event.submitter as HTMLButtonElement)?.getAttribute('formaction') ?? node.action;
 
       const response = await fetch(action, {
         method: node.method,

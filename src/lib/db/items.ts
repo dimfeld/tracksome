@@ -158,6 +158,10 @@ export async function updateItem(
     };
   });
 
+  if (!update && !attributeItems.length) {
+    return null;
+  }
+
   const [withValue, withoutValue] = partition(
     attributeItems,
     (item) =>
@@ -165,10 +169,6 @@ export async function updateItem(
       Boolean(item.text_value) ||
       typeof item.trackable_attribute_category_id === 'number'
   );
-
-  if (!update && !attributeItems.length) {
-    return null;
-  }
 
   let attributeInsert = withValue.length
     ? pgp.helpers.insert(withValue, updateAttributeColumns) +
