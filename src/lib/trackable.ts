@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { contrastingColor } from './colors';
 import { WithStrings, intFromString } from './form';
+import { Session } from './user';
 
 export interface Trackable {
   trackable_id: number;
@@ -77,4 +78,18 @@ export function readTrackableAttributeInput(input: WithStrings<TrackableAttribut
   }
 
   return input;
+}
+
+export function trackableUrl(session: Session, pageUrl: URL, href: string) {
+  if (!session.trackableView) {
+    return href;
+  }
+
+  let params = new URLSearchParams(session.trackableView);
+  let newUrl = new URL(href, pageUrl);
+  for (let [key, val] of params.entries()) {
+    newUrl.searchParams.set(key, val);
+  }
+
+  return newUrl.toString();
 }

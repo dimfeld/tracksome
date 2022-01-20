@@ -1,12 +1,12 @@
 <script context="module" lang="ts">
   import type { Load } from '@sveltejs/kit';
-  import { User } from '$lib/user';
+  import { setSessionStateCookie, User } from '$lib/user';
 
   export const load: Load = async function ({ fetch }) {
     if (browser) {
       let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       // Record timezone offset so that server-side queries can adjust appropriately.
-      document.cookie = `timezone=${timezone};max-age=31536000`;
+      setSessionStateCookie('timezone', timezone);
     }
 
     let userResponse = await fetch('/api/user');

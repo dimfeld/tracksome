@@ -11,8 +11,17 @@
     return output.toString();
   }
 
-  export const load: Load = async ({ fetch, url, params, stuff }) => {
+  export const load: Load = async ({ fetch, url, params, stuff, session }) => {
     try {
+      if (!url.search && session.trackableView) {
+        let withQs = new URL(url);
+        withQs.search = session.trackableView;
+        return {
+          status: 302,
+          redirect: withQs.toString(),
+        };
+      }
+
       let { trackable_id } = params;
       let items = await handleJsonResponse(fetch(itemUrl(url, trackable_id)));
 
@@ -34,13 +43,11 @@
 </script>
 
 <script lang="ts">
-  import { Trackable, colorVars, TrackableAttribute } from '$lib/trackable';
+  import { Trackable, TrackableAttribute } from '$lib/trackable';
   import { Item, newItemSubmit, newItemResponse } from '$lib/items';
-  import { formatInTimeZone } from 'date-fns-tz';
   import { page, session } from '$app/stores';
   import { submit } from '$lib/form';
   import Button from '$lib/components/Button.svelte';
-  import Labelled from '$lib/components/Labelled.svelte';
   import Icon from '$lib/components/Icon.svelte';
   import { pencilSolid } from '$lib/components/icons';
   import {
@@ -54,16 +61,16 @@
   import { updateQueryString } from '$lib/query_string_store';
   import { goto } from '$app/navigation';
   import sorter from 'sorters';
-  import { browser } from '$app/env';
   import Card from '$lib/components/Card.svelte';
   import ItemEditor from '$lib/components/ItemEditor.svelte';
+  import { updateSession } from '$lib/user';
 
   export let trackable: Trackable;
   export let attributes: TrackableAttribute[];
   export let items: Item[];
 
   let granularitySelect: HTMLSelectElement;
-  function updateGranularity(e: Event) {
+  function updateGranularity() {
     let newGranularity = granularitySelect?.value;
     if (newGranularity !== currentGranularity) {
       goto(updateQueryString($page.url, { granularity: newGranularity }).toString(), {
@@ -85,20 +92,8 @@
 
   $: canAddNew = trackable.multiple_per_day || !items.length;
 
-  if (browser && !$page.url.search) {
-    let prevSearch = localStorage.getItem('trackable_view');
-    if (prevSearch) {
-      let withQs = new URL($page.url);
-      withQs.search = prevSearch;
-      goto(withQs.toString(), {
-        replaceState: true,
-        noscroll: true,
-        keepfocus: true,
-      });
-    }
-  }
-
-  $: if (browser) localStorage.setItem('trackable_view', $page.url.search);
+  // Save the most recent view so that we can go back to it by default.
+  $: updateSession('trackableView', $page.url.search);
 </script>
 
 <section class="p-2 mx-auto w-full sm:max-w-lg">

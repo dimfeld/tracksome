@@ -2,6 +2,7 @@ import { derived, Readable, writable, Writable } from 'svelte/store';
 import { get } from 'svelte/store';
 import { session } from '$app/stores';
 import { browser } from '$app/env';
+import { updateSession } from './user';
 
 export enum Theme {
   Dark = 'dark',
@@ -20,7 +21,7 @@ export function createDarkStore(): DarkModeStore {
   if (browser) {
     // Save this so that future SSR runs can render properly from the start, if the user hasn't
     // selected a preference.
-    document.cookie = `defaultDarkMode=${cssDarkModePreference()};max-age=31536000`;
+    updateSession('defaultDarkMode', cssDarkModePreference());
   }
 
   if (browser && 'theme' in window.localStorage) {

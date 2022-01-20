@@ -8,6 +8,7 @@ export type TracksomeLocals<Authed extends boolean = true> = {
   theme: Theme;
   defaultDarkMode: boolean;
   timezone: string;
+  trackableView?: string;
 };
 
 type Typify<T> = { [K in keyof T]: Typify<T[K]> };

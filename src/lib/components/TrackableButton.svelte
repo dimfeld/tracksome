@@ -4,11 +4,12 @@
   import { submit } from '$lib/form';
   import * as d3 from 'd3';
   import { goto, invalidate } from '$app/navigation';
-  import { Trackable, colorVars } from '$lib/trackable';
+  import { Trackable, colorVars, trackableUrl } from '$lib/trackable';
   import { desktopScreen } from '$lib/styles';
   import { Item, newItemSubmit, newItemResponse } from '$lib/items';
   import TrackableButtonLabel from './_TrackableButtonLabel.svelte';
   import { showTippy } from '$lib/tippy';
+  import { session, page } from '$app/stores';
 
   export let trackable: Trackable;
   export let items: Item[];
@@ -35,7 +36,10 @@
 </script>
 
 <div class="flex shadow-current drop-shadow-lg" style={cssVars}>
-  <a class="{centerButtonClasses} flex w-full" href="/trackables/{trackable.trackable_id}">
+  <a
+    class="{centerButtonClasses} flex w-full"
+    href={trackableUrl($session, $page.url, `/trackables/${trackable.trackable_id}`)}
+  >
     <TrackableButtonLabel {trackable} {items} />
   </a>
   {#if canAddNew}
@@ -45,7 +49,7 @@
       action="/api/items"
       use:submit={{
         onSubmit: (data) => newItemSubmit(data, canAddNew),
-        onResponse: newItemResponse,
+        onResponse: (r) => newItemResponse(r),
       }}
     >
       <input type="hidden" name="trackable_id" value={trackable.trackable_id} />

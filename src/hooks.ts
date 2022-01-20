@@ -5,6 +5,7 @@ import { GetSession, RequestEvent } from '@sveltejs/kit/types/hooks';
 import { randomColor } from '$lib/colors';
 import { TracksomeLocals } from '$lib/endpoints';
 import { Theme } from '$lib/styles';
+import { Session } from '$lib/user';
 
 function requireAuthed(event: RequestEvent) {
   let path = event.url.pathname;
@@ -35,6 +36,7 @@ export const handle: Handle<TracksomeLocals<false>> = async function ({ event, r
   event.locals.theme = cookies.theme as Theme;
   event.locals.defaultDarkMode = cookies.defaultDarkMode === 'true';
   event.locals.timezone = cookies.timezone || 'UTC';
+  event.locals.trackableView = cookies.trackableView;
 
   if (requireAuthed(event) && !event.locals.userId) {
     return new Response('Not logged in', {
@@ -51,11 +53,12 @@ export const handle: Handle<TracksomeLocals<false>> = async function ({ event, r
   return resolve(event);
 };
 
-export const getSession: GetSession<TracksomeLocals> = (event) => {
+export const getSession: GetSession<TracksomeLocals, Session> = (event) => {
   return {
     theme: event.locals.theme,
     defaultDarkMode: event.locals.defaultDarkMode,
     randomColor: randomColor(),
     timezone: event.locals.timezone,
+    trackableView: event.locals.trackableView,
   };
 };
