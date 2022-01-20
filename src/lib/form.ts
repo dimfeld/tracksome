@@ -1,5 +1,6 @@
 import { ReadOnlyFormData } from '@sveltejs/kit/types/helper';
 import set from 'just-safe-set';
+import accepts from 'accepts';
 import { Writable, writable } from 'svelte/store';
 import { LoadingStore } from './loader_status';
 
@@ -139,7 +140,7 @@ export function formDataToJson<T extends object>(form: FormData | T): T | WithSt
 export async function parseBody<T extends object>(
   request: Request
 ): Promise<WithStrings<T> | null> {
-  let contentType = request.headers.get('content-type');
+  let contentType = request.headers.get('content-type')?.split(';')[0]?.toLowerCase();
 
   switch (contentType) {
     case 'application/x-www-form-urlencoded':
