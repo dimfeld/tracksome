@@ -6,18 +6,25 @@ export interface LoadingStore extends Readable<boolean> {
 }
 
 export function loadingStore(): LoadingStore {
-  let loading = new Set();
+  let loading = new Map<any, number>();
 
   let store = writable(false);
 
   return {
     subscribe: store.subscribe,
     add(key: string) {
-      loading.add(key);
+      let newValue = (loading.get(key) || 0) + 1;
+      loading.set(key, newValue);
       store.set(loading.size > 0);
     },
     delete(key: string) {
-      loading.delete(key);
+      let newValue = (loading.get(key) || 0) - 1;
+      if (newValue > 0) {
+        loading.set(key, newValue);
+      } else {
+        loading.delete(key);
+      }
+
       store.set(loading.size > 0);
     },
   };

@@ -1,12 +1,16 @@
 import { RequestHandler } from '$lib/endpoints';
 import * as itemDb from '$lib/db/items';
-import { formDataToJson } from '$lib/form';
+import { parseBody } from '$lib/form';
 import { Item } from '$lib/items';
 import { zonedTimeToUtc } from 'date-fns-tz';
 import { parse as parseDate } from 'date-fns';
 
-export const patch: RequestHandler<Item, {}> = async (request) => {
-  let input = formDataToJson<Partial<Item & { date: string }>>(request.body);
+export const patch: RequestHandler<{}> = async ({ locals, params, request }) => {
+  let input = await parseBody<Partial<Item & { date: string }>>(request);
+  if (!input) {
+    return { status: 400 };
+  }
+
   let { date, ...item } = input;
 
   if (date && item.time && item.timezone) {
@@ -14,7 +18,7 @@ export const patch: RequestHandler<Item, {}> = async (request) => {
     item.time = zonedTimeToUtc(newTime, item.timezone).toISOString();
   }
 
-  await itemDb.updateItem(request.locals.userId, +request.params.item_id, item);
+  await itemDb.updateItem(locals.userId, +params.item_id, item);
 
   return {
     body: {},

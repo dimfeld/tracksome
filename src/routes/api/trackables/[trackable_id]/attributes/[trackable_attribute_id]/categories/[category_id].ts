@@ -3,14 +3,19 @@ import {
   updateAttributeCategory,
 } from '$lib/db/trackable_attribute_category';
 import { RequestHandler } from '$lib/endpoints';
-import { formDataToJson } from '$lib/form';
+import { parseBody } from '$lib/form';
 import { TrackableAttributeCategory } from '$lib/trackable';
 
-export const patch: RequestHandler<
-  Partial<TrackableAttributeCategory>,
-  TrackableAttributeCategory
-> = async ({ locals, params, body }) => {
-  let input = formDataToJson<Partial<TrackableAttributeCategory>>(body);
+export const patch: RequestHandler<TrackableAttributeCategory> = async ({
+  locals,
+  params,
+  request,
+}) => {
+  let input = await parseBody<Partial<TrackableAttributeCategory>>(request);
+  if (!input) {
+    return { status: 400 };
+  }
+
   let result = await updateAttributeCategory({
     categoryId: +params.category_id,
     attributeId: +params.trackable_attribute_id,
@@ -23,7 +28,7 @@ export const patch: RequestHandler<
   };
 };
 
-export const del: RequestHandler<unknown, {}> = async ({ locals, params }) => {
+export const del: RequestHandler<{}> = async ({ locals, params }) => {
   await deleteAttributeCategory({
     userId: locals.userId,
     attributeId: +params.trackable_attribute_id,

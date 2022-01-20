@@ -1,7 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { DefaultBody } from '@sveltejs/kit/types/endpoint';
-import { ReadOnlyFormData } from '@sveltejs/kit/types/helper';
-import { ServerRequest, ServerResponse } from '@sveltejs/kit/types/hooks';
 import { Theme } from './styles';
 import Accepts from 'accepts';
 
@@ -14,14 +12,17 @@ export type TracksomeLocals<Authed extends boolean = true> = {
 
 type Typify<T> = { [K in keyof T]: Typify<T[K]> };
 
-type TracksomeRequestHandler<Input = unknown, Output = DefaultBody> = RequestHandler<
+type TracksomeRequestHandler<Output = DefaultBody> = RequestHandler<
   TracksomeLocals,
-  Input | ReadOnlyFormData,
   Typify<Output>
 >;
 export type { TracksomeRequestHandler as RequestHandler };
 
-export function parseNumber(value: string | null): number | undefined {
+export function parseNumber(value: number | string | null): number | undefined {
+  if (typeof value !== 'string') {
+    return value ?? undefined;
+  }
+
   let v = parseInt(value, 10);
   if (Number.isNaN(v)) {
     return undefined;
@@ -30,9 +31,9 @@ export function parseNumber(value: string | null): number | undefined {
 }
 
 export function responseAccepts(
-  request: ServerRequest,
-  responses: Record<string, () => ServerResponse | Promise<ServerResponse>>
-): ServerResponse | Promise<ServerResponse> {
+  request: Request,
+  responses: Record<string, () => Response | Promise<Response>>
+): Response | Promise<Response> {
   // @ts-ignore Different types but they overlap in the proper places.
   let accepts = new Accepts(request);
 

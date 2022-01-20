@@ -1,19 +1,22 @@
 import { addAttributeCategory } from '$lib/db/trackable_attribute_category';
 import { RequestHandler } from '$lib/endpoints';
-import { formDataToJson } from '$lib/form';
+import { parseBody } from '$lib/form';
 import { TrackableAttributeCategory } from '$lib/trackable';
 
-export const post: RequestHandler<TrackableAttributeCategory, TrackableAttributeCategory> = async ({
+export const post: RequestHandler<TrackableAttributeCategory> = async ({
   locals,
   params,
-  body,
+  request,
 }) => {
-  let input = formDataToJson<TrackableAttributeCategory>(body);
+  let body = await parseBody<TrackableAttributeCategory>(request);
+  if (!body) {
+    return { status: 400 };
+  }
 
   let result = await addAttributeCategory({
     attributeId: +params.trackable_attribute_id,
     userId: locals.userId,
-    category: input,
+    category: body,
   });
 
   return {

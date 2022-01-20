@@ -1,12 +1,11 @@
 import { RequestHandler, parseNumber } from '$lib/endpoints';
 import * as itemDb from '$lib/db/items';
 import { Item } from '$lib/items';
-import { formDataToJson } from '$lib/form';
-import { ReadOnlyFormData } from '@sveltejs/kit/types/helper';
+import { parseBody } from '$lib/form';
 import { DateGranularity, dateRange } from '$lib/dates';
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 
-export const get: RequestHandler<unknown, Item[]> = async ({ locals, url }) => {
+export const get: RequestHandler<Item[]> = async ({ locals, url }) => {
   let dateParam = url.searchParams.get('date');
   let baseDate: Date;
   if (dateParam && dateParam !== 'today') {
@@ -32,12 +31,12 @@ export const get: RequestHandler<unknown, Item[]> = async ({ locals, url }) => {
   };
 };
 
-export const post: RequestHandler<Item | ReadOnlyFormData, Item | null> = async ({
-  locals,
-  body,
-}) => {
+export const post: RequestHandler<Item | null> = async ({ locals, request }) => {
   let nowUtc = new Date().toISOString();
-  let data = formDataToJson<Item>(body);
+  let data = await parseBody<Item>(request);
+  if (!data) {
+    return { status: 400 };
+  }
 
   let newItem: Omit<Item, 'item_id'> = {
     trackable_id: +data.trackable_id,

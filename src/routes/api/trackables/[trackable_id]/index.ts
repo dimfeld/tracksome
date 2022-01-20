@@ -1,4 +1,4 @@
-import { checkboxToBoolean } from '$lib/form';
+import { checkboxToBoolean, parseBody } from '$lib/form';
 import { RequestHandler } from '$lib/endpoints';
 import {
   getTrackable,
@@ -7,9 +7,8 @@ import {
   partialUpdateTrackable,
 } from '$lib/db/trackable';
 import { Trackable } from '$lib/trackable';
-import { formDataToJson } from '$lib/form';
 
-export const get: RequestHandler<unknown, Trackable> = async ({ locals, params }) => {
+export const get: RequestHandler<Trackable> = async ({ locals, params }) => {
   let result = await getTrackable({ userId: locals.userId, trackableId: +params.trackable_id });
   if (result) {
     return {
@@ -22,12 +21,16 @@ export const get: RequestHandler<unknown, Trackable> = async ({ locals, params }
   }
 };
 
-export const put: RequestHandler<Trackable, Trackable> = async ({ locals, body, params }) => {
-  let data = formDataToJson<Trackable>(body);
+export const put: RequestHandler<Trackable> = async ({ locals, request, params }) => {
+  let data = await parseBody<Trackable>(request);
+  if (!data) {
+    return { status: 400 };
+  }
+
   let result = await updateTrackable(locals.userId, {
     ...(data as Trackable),
     trackable_id: +params.trackable_id,
-    multiple_per_day: checkboxToBoolean(data.multiple_per_day),
+    multiple_per_day: Boolean(checkboxToBoolean(data.multiple_per_day)),
   });
 
   if (result) {
@@ -41,12 +44,12 @@ export const put: RequestHandler<Trackable, Trackable> = async ({ locals, body, 
   }
 };
 
-export const patch: RequestHandler<Partial<Trackable>, Trackable | null> = async ({
-  locals,
-  body,
-  params,
-}) => {
-  let data = formDataToJson<Partial<Trackable>>(body);
+export const patch: RequestHandler<Trackable | null> = async ({ locals, request, params }) => {
+  let data = await parseBody<Partial<Trackable>>(request);
+  if (!data) {
+    return { status: 400 };
+  }
+
   let result = await partialUpdateTrackable(locals.userId, +params.trackable_id, data);
 
   if (result) {
@@ -60,7 +63,7 @@ export const patch: RequestHandler<Partial<Trackable>, Trackable | null> = async
   }
 };
 
-export const del: RequestHandler<unknown, object> = async ({ locals, params }) => {
+export const del: RequestHandler<object> = async ({ locals, params }) => {
   await deleteTrackable({ userId: locals.userId, trackableId: +params.trackable_id });
   return {
     body: {},

@@ -1,9 +1,9 @@
 import * as trackableAttributesDb from '$lib/db/trackable_attribute';
 import { RequestHandler } from '$lib/endpoints';
-import { formDataToJson, intFromString } from '$lib/form';
+import { parseBody } from '$lib/form';
 import { TrackableAttribute, readTrackableAttributeInput } from '$lib/trackable';
 
-export const get: RequestHandler<unknown, TrackableAttribute> = async ({ locals, params }) => {
+export const get: RequestHandler<TrackableAttribute> = async ({ locals, params }) => {
   const attribute = await trackableAttributesDb.getTrackableAttributes({
     userId: locals.userId,
     trackableId: +params.trackable_id,
@@ -21,12 +21,13 @@ export const get: RequestHandler<unknown, TrackableAttribute> = async ({ locals,
   };
 };
 
-export const patch: RequestHandler<Partial<TrackableAttribute>, TrackableAttribute> = async ({
-  locals,
-  params,
-  body,
-}) => {
-  const input = readTrackableAttributeInput(formDataToJson<Partial<TrackableAttribute>>(body));
+export const patch: RequestHandler<TrackableAttribute> = async ({ locals, params, request }) => {
+  const body = await parseBody<Partial<TrackableAttribute>>(request);
+  if (!body) {
+    return { status: 400 };
+  }
+
+  const input = readTrackableAttributeInput(body);
 
   const output = await trackableAttributesDb.partialUpdateTrackable({
     userId: locals.userId,
@@ -40,7 +41,7 @@ export const patch: RequestHandler<Partial<TrackableAttribute>, TrackableAttribu
   };
 };
 
-export const del: RequestHandler<unknown, unknown> = async ({ locals, params }) => {
+export const del: RequestHandler<unknown> = async ({ locals, params }) => {
   await trackableAttributesDb.deleteTrackableAttribute({
     userId: locals.userId,
     trackableId: +params.trackable_id,
