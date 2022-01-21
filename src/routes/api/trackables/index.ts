@@ -11,7 +11,7 @@ export const get: RequestHandler<Trackable[]> = async ({ locals }) => {
 };
 
 export const post: RequestHandler<Trackable> = async ({ locals, request }) => {
-  let data = await parseBody<Trackable>(request);
+  let data = await parseBody<Trackable>(request, locals);
   if (!data) {
     return { status: 400 };
   }

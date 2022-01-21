@@ -15,7 +15,7 @@ export const get: RequestHandler<TrackableAttribute[]> = async ({ params, locals
 };
 
 export const post: RequestHandler<TrackableAttribute> = async ({ request, params, locals }) => {
-  let body = await parseBody<TrackableAttribute>(request);
+  let body = await parseBody<TrackableAttribute>(request, locals);
   if (!body) {
     return { status: 400 };
   }

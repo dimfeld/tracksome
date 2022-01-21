@@ -4,6 +4,7 @@ import { Theme } from './styles';
 import Accepts from 'accepts';
 
 export type TracksomeLocals<Authed extends boolean = true> = {
+  contentType: string;
   userId: Authed extends true ? number : number | null;
   theme: Theme;
   defaultDarkMode: boolean;

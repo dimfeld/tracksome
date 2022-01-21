@@ -1,8 +1,9 @@
 import { ReadOnlyFormData } from '@sveltejs/kit/types/helper';
 import set from 'just-safe-set';
-import accepts from 'accepts';
 import { Writable, writable } from 'svelte/store';
-import { LoadingStore } from './loader_status';
+import { LoadingStore } from './loader_status.js';
+import { RequestEvent } from '@sveltejs/kit';
+import { TracksomeLocals } from './endpoints.js';
 
 export interface SubmitActionOptions {
   onSubmit?: (body: FormData | null, event: SubmitEvent) => Promise<boolean> | boolean | undefined;
@@ -138,18 +139,17 @@ export function formDataToJson<T extends object>(form: FormData | T): T | WithSt
 }
 
 export async function parseBody<T extends object>(
-  request: Request
+  request: Request,
+  locals: TracksomeLocals
 ): Promise<WithStrings<T> | null> {
-  let contentType = request.headers.get('content-type')?.split(';')[0]?.toLowerCase();
-
-  switch (contentType) {
+  switch (locals.contentType) {
     case 'application/x-www-form-urlencoded':
     case 'multipart/form-data': {
       let data = await request.formData();
       return formDataToJson<T>(data);
     }
     case 'application/json':
-      return request.json();
+      return request.json() as T;
     default:
       return null;
   }

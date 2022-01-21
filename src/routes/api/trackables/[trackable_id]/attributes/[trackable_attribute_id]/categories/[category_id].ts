@@ -11,7 +11,7 @@ export const patch: RequestHandler<TrackableAttributeCategory> = async ({
   params,
   request,
 }) => {
-  let input = await parseBody<Partial<TrackableAttributeCategory>>(request);
+  let input = await parseBody<Partial<TrackableAttributeCategory>>(request, locals);
   if (!input) {
     return { status: 400 };
   }

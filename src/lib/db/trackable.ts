@@ -1,20 +1,22 @@
 import { db, partialUpdate, pgp } from '$lib/db/client';
 import { Trackable } from '$lib/trackable';
 
+const table = { table: 'trackables' };
+const sortColumn = { name: 'sort', cast: 'int' };
+const userIdColumn = { name: 'user_id', cnd: true, cast: 'bigint' };
+const trackableIdColumn = { name: 'trackable_id', cnd: true, cast: 'bigint' };
 const baseColumns = new pgp.helpers.ColumnSet(
   [
     'name',
     { name: 'enabled', def: true },
     { name: 'multiple_per_day', cast: 'boolean' },
-    { name: 'sort', cast: 'int' },
+    sortColumn,
     'color',
   ],
-  { table: 'trackables' }
+  table
 );
 
-const userIdColumn = { name: 'user_id', cnd: true, cast: 'bigint' };
-const trackableIdColumn = { name: 'trackable_id', cnd: true, cast: 'bigint' };
-
+const reorderColumns = new pgp.helpers.ColumnSet([trackableIdColumn, sortColumn], table);
 const fetchColumns = baseColumns.extend([trackableIdColumn]);
 const insertColumns = baseColumns.extend([userIdColumn]);
 const updateColumns = fetchColumns.extend([userIdColumn]);
@@ -66,6 +68,20 @@ export function partialUpdateTrackable(
     ...trackable,
     user_id: userId,
     trackable_id: trackableId,
+  });
+}
+
+export async function updateSorts(
+  userId: number,
+  newSorts: { trackable_id: number; sort: number }[]
+) {
+  let updateQuery = pgp.helpers.update(newSorts, reorderColumns, 'trackables', {
+    tableAlias: 't',
+    valueAlias: 'v',
+  });
+
+  return db.query(`${updateQuery} WHERE t.trackable_id=v.trackable_id AND t.user_id=$[userId]`, {
+    userId,
   });
 }
 

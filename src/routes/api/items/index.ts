@@ -33,7 +33,7 @@ export const get: RequestHandler<Item[]> = async ({ locals, url }) => {
 
 export const post: RequestHandler<Item | null> = async ({ locals, request }) => {
   let nowUtc = new Date().toISOString();
-  let data = await parseBody<Item>(request);
+  let data = await parseBody<Item>(request, locals);
   if (!data) {
     return { status: 400 };
   }

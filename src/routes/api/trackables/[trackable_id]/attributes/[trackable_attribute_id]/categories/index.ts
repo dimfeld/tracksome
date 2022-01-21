@@ -8,7 +8,7 @@ export const post: RequestHandler<TrackableAttributeCategory> = async ({
   params,
   request,
 }) => {
-  let body = await parseBody<TrackableAttributeCategory>(request);
+  let body = await parseBody<TrackableAttributeCategory>(request, locals);
   if (!body) {
     return { status: 400 };
   }

@@ -16,8 +16,14 @@ function requireAuthed(event: RequestEvent) {
 
 /** Return true if this request doesn't present CSRF concerns. False if it appears to be
  * a CSRF or is from an old browser (IE11) that doesn't send the proper headers. */
-function csrfCheck({ request, url }: RequestEvent): boolean {
+function csrfCheck({ request, locals, url }: RequestEvent<TracksomeLocals<false>>): boolean {
   if (request.method === 'GET' || request.method === 'HEAD') {
+    return true;
+  }
+
+  if (locals.contentType === 'application/json') {
+    // CSRF will *always* be a form submission from a browser, so JSON payloads are always OK.
+    // This allows use of the API from external clients.
     return true;
   }
 
@@ -31,7 +37,10 @@ function csrfCheck({ request, url }: RequestEvent): boolean {
 }
 
 export const handle: Handle<TracksomeLocals<false>> = async function ({ event, resolve }) {
+  let contentType = event.request.headers.get('content-type')?.split(';')[0]?.toLowerCase() ?? '';
   let cookies = cookie.parse(event.request.headers.get('cookie') || '');
+
+  event.locals.contentType = contentType;
   event.locals.userId = await session.read(cookies.sid);
   event.locals.theme = cookies.theme as Theme;
   event.locals.defaultDarkMode = cookies.defaultDarkMode === 'true';

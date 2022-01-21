@@ -6,7 +6,7 @@ import { zonedTimeToUtc } from 'date-fns-tz';
 import { parse as parseDate } from 'date-fns';
 
 export const patch: RequestHandler<{}> = async ({ locals, params, request }) => {
-  let input = await parseBody<Partial<Item & { date: string }>>(request);
+  let input = await parseBody<Partial<Item & { date: string }>>(request, locals);
   if (!input) {
     return { status: 400 };
   }

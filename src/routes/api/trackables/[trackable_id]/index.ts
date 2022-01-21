@@ -22,7 +22,7 @@ export const get: RequestHandler<Trackable> = async ({ locals, params }) => {
 };
 
 export const put: RequestHandler<Trackable> = async ({ locals, request, params }) => {
-  let data = await parseBody<Trackable>(request);
+  let data = await parseBody<Trackable>(request, locals);
   if (!data) {
     return { status: 400 };
   }
@@ -45,7 +45,7 @@ export const put: RequestHandler<Trackable> = async ({ locals, request, params }
 };
 
 export const patch: RequestHandler<Trackable | null> = async ({ locals, request, params }) => {
-  let data = await parseBody<Partial<Trackable>>(request);
+  let data = await parseBody<Partial<Trackable>>(request, locals);
   if (!data) {
     return { status: 400 };
   }

@@ -35,7 +35,7 @@
     (canAddNew ? 'px-4 rounded-l-full' : 'pl-4 pr-14 rounded-full');
 </script>
 
-<div class="flex shadow-current drop-shadow-lg" style={cssVars}>
+<div class="flex shadow-current drop-shadow-lg w-full" style={cssVars}>
   <a
     class="{centerButtonClasses} flex w-full"
     href={trackableUrl($session, $page.url, `/trackables/${trackable.trackable_id}`)}

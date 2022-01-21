@@ -22,7 +22,7 @@ export const get: RequestHandler<TrackableAttribute> = async ({ locals, params }
 };
 
 export const patch: RequestHandler<TrackableAttribute> = async ({ locals, params, request }) => {
-  const body = await parseBody<Partial<TrackableAttribute>>(request);
+  const body = await parseBody<Partial<TrackableAttribute>>(request, locals);
   if (!body) {
     return { status: 400 };
   }
