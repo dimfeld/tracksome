@@ -134,7 +134,7 @@
 
 <section class="max-w-md mx-auto p-2">
   <ul class="w-full space-y-4">
-    {#each trackableRows as { trackable, items } (trackable.trackable_id)}
+    {#each trackableRows as { trackable, items }, index (trackable.trackable_id)}
       <li class="flex items-center">
         {#if editMode}
           <div class="flex mr-2" transition:slideHorizontal|local>
@@ -144,6 +144,7 @@
               form="reorder-form"
               formaction="/api/trackables/{trackable.trackable_id}/move_up"
               title="Move {trackable.name} Up"
+              disabled={index === 0}
               iconButton><Icon icon={chevronUpSolid} /></Button
             >
             <Button
@@ -152,6 +153,7 @@
               form="reorder-form"
               formaction="/api/trackables/{trackable.trackable_id}/move_down"
               title="Move {trackable.name} Down"
+              disabled={index === trackableRows.length - 1}
               iconButton><Icon icon={chevronDownSolid} /></Button
             >
           </div>
@@ -180,7 +182,7 @@
   </form>
 
   <a href={updateQueryString($page.url, { edit: editMode ? null : true }).toString()}
-    ><Button class="mt-4">
+    ><Button class="mt-4 w-40">
       {#if editMode}
         Done Editing
       {:else}
