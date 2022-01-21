@@ -9,7 +9,7 @@ export const post: RequestHandler<unknown> = async ({ request, params, locals })
     return { status: 400 };
   }
 
-  let items = Object.entries(input)
+  let items = Object.entries(input.trackable)
     .map(([id, sort]) => ({ id: +id, sort: +sort }))
     .sort(sorter((i) => i.sort));
 
