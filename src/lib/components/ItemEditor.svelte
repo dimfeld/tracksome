@@ -6,6 +6,7 @@
   import { formatInTimeZone } from 'date-fns-tz';
   import sorter from 'sorters';
   import Labelled from './Labelled.svelte';
+  import Button from './Button.svelte';
 
   export let item: Item;
   export let attributes: TrackableAttribute[];
@@ -35,14 +36,17 @@
   action="/api/items/{item.item_id}?_method=PATCH"
   method="POST"
   class="flex flex-col items-stretch space-y-4"
+  let:slowLoading
 >
-  <p class="flex justify-between space-x-2">
+  <p class="flex justify-between items-stretch space-x-2">
     <input
-      type="date"
+      type="datetime-local"
       name="date"
-      value={formatInTimeZone(item.time, item.timezone, 'yyyy-MM-dd')}
+      value={formatInTimeZone(item.time, item.timezone, `yyyy-MM-dd'T'HH:mm`)}
     />
-    <input type="time" name="time" value={formatInTimeZone(item.time, item.timezone, 'HH:mm')} />
+    <Button type="submit" class="w-20" useTrackableColors>
+      {#if slowLoading}Saving...{:else}Save{/if}
+    </Button>
   </p>
   <Labelled class="mt-2" label="Note">
     <input class="w-full" type="text" name="note" bind:value={item.note} />

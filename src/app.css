@@ -12,7 +12,7 @@
   input[type='number'],
   input[type='date'],
   input[type='time'],
-  input[type='datetime'],
+  input[type='datetime-local'],
   textarea {
     @apply bg-white dark:bg-gray-800 focus:ring-accent-500 focus:border-accent-500 sm:text-sm rounded-md;
   }
