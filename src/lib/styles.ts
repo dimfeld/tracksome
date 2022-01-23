@@ -24,14 +24,10 @@ export function createDarkStore(): DarkModeStore {
     updateSession('defaultDarkMode', cssDarkModePreference());
   }
 
-  if (browser && 'theme' in window.localStorage) {
-    initialDarkMode = window.localStorage.theme;
-  } else {
-    let sess = get(session);
-    let { theme } = sess;
-    if (theme) {
-      initialDarkMode = theme;
-    }
+  let sess = get(session);
+  let { theme } = sess;
+  if (Object.values(Theme).includes(theme)) {
+    initialDarkMode = theme;
   }
 
   let darkModeStore = writable(initialDarkMode);
@@ -48,7 +44,6 @@ export function createDarkStore(): DarkModeStore {
       });
     },
     set(value: Theme) {
-      localStorage.theme = value;
       document.cookie = `theme=${value};max-age=31536000`;
       darkModeStore.set(value);
     },
