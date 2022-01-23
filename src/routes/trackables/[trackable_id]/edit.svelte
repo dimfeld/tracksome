@@ -13,7 +13,6 @@
 
 <script lang="ts">
   import { invalidate } from '$app/navigation';
-  import { submit } from '$lib/form';
   import { blankAttribute, Trackable, TrackableAttribute } from '$lib/trackable';
   import Button from '$lib/components/Button.svelte';
   import Card from '$lib/components/Card.svelte';
@@ -21,6 +20,7 @@
   import sorter from 'sorters';
   import AttributeEditor from './_AttributeEditor.svelte';
   import Checkbox from '$lib/components/Checkbox.svelte';
+  import Form from '$lib/components/Form.svelte';
 
   export let trackable: Trackable;
   export let attributes: TrackableAttribute[];
@@ -47,11 +47,11 @@
   </div>
 
   <Card label="Trackable Properties">
-    <form
+    <Form
       action="{updateTrackablePath}?_method=PATCH"
       method="POST"
-      use:submit={{ onResponse }}
       class="flex flex-col space-y-4"
+      {onResponse}
     >
       <div class="flex items-center space-x-4">
         <Labelled class="flex-1" label="Name">
@@ -76,7 +76,7 @@
 
         <Button type="submit" useTrackableColors>Save</Button>
       </div>
-    </form>
+    </Form>
   </Card>
 
   {#each attributes as attribute (attribute.trackable_attribute_id)}

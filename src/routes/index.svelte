@@ -31,7 +31,6 @@
   import TrackableButton from '$lib/components/TrackableButton.svelte';
   import { Trackable } from '$lib/trackable';
   import { Item, todayItemsUrl } from '$lib/items';
-  import { submit } from '$lib/form';
   import sorter from 'sorters';
   import { appContext } from '$lib/context';
   import { randomColor } from '$lib/colors';
@@ -42,30 +41,16 @@
   import { cubicOut } from 'svelte/easing';
   import Icon from '$lib/components/Icon.svelte';
   import { chevronDownSolid, chevronUpSolid } from '$lib/components/icons';
-  import type { SlideParams } from 'svelte/types/runtime/transition';
+  import Form from '$lib/components/Form.svelte';
 
   export let trackables: Trackable[];
   export let items: Item[];
 
-  let { loading, toasts } = appContext();
+  let { toasts } = appContext();
 
   function onSubmit(data: FormData | null) {
     if (!data || !data.get('name')) {
       return false;
-    }
-
-    loading.add('newTrackable');
-  }
-
-  async function onResponse(res: Response, form: HTMLFormElement) {
-    loading.delete('newTrackable');
-
-    if (res.ok) {
-      invalidate('/api/trackables');
-      form.reset();
-      $session.randomColor = randomColor();
-    } else {
-      $toasts.error(await res.text());
     }
   }
 
@@ -119,17 +104,17 @@
 </script>
 
 {#if editMode}
-  <form
+  <Form
     class="hidden"
     id="reorder-form"
     method="POST"
     action="/api/trackables/reorder"
-    use:submit={{ onResponse: () => invalidate('/api/trackables') }}
+    onResponse={() => invalidate('/api/trackables')}
   >
     {#each trackableRows as { trackable } (trackable.trackable_id)}
       <input type="hidden" name="trackable.{trackable.trackable_id}" value={trackable.sort} />
     {/each}
-  </form>
+  </Form>
 {/if}
 
 <section class="max-w-md mx-auto p-2">
@@ -165,23 +150,35 @@
     {/each}
   </ul>
 
-  <form
+  <Form
     class="mt-4 w-full"
     method="POST"
     action="/api/trackables"
-    use:submit={{ onSubmit, onResponse }}
+    resetOnSuccess={true}
+    {onSubmit}
+    onResponse={() => {
+      invalidate('/api/trackables');
+      $session.randomColor = randomColor();
+    }}
   >
     <h2 class="font-medium text-dgray-600">New Trackable</h2>
     <input name="sort" type="hidden" value={maxSort + 1} />
     <p class="mt-2">
-      <input class="w-full" name="name" autocomplete="off" type="text" placeholder="Name" />
+      <input
+        class="w-full"
+        name="name"
+        required
+        autocomplete="off"
+        type="text"
+        placeholder="Name"
+      />
     </p>
     <p class="mt-2 flex justify-between items-center">
       <input name="color" type="color" class="inline h-8 bg-transparent" value={newItemColor} />
       <Switch name="multiple_per_day" value={false}>Multiple Per Day</Switch>
       <Button type="submit" style="primary">Add</Button>
     </p>
-  </form>
+  </Form>
 
   <a href={updateQueryString($page.url, { edit: editMode ? null : true }).toString()}
     ><Button class="mt-4 w-40">

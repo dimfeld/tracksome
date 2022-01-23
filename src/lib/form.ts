@@ -1,8 +1,6 @@
-import { ReadOnlyFormData } from '@sveltejs/kit/types/helper';
 import set from 'just-safe-set';
 import { Writable, writable } from 'svelte/store';
 import { LoadingStore } from './loader_status.js';
-import { RequestEvent } from '@sveltejs/kit';
 import { TracksomeLocals } from './endpoints.js';
 
 /** Add this to a form submission to make the handler redirect to another place
@@ -22,17 +20,11 @@ export interface SubmitActionOptions {
   loading?: LoadingStore;
 }
 
-export enum SubmitStatus {
-  idle,
-  submitting,
-  success,
-  failed,
-}
-
+export type SubmitStatus = 'idle' | 'submitting' | 'success' | 'failed';
 export type SubmitStatusStore = Writable<SubmitStatus>;
 
 export function submitStatusStore(): SubmitStatusStore {
-  return writable(SubmitStatus.idle);
+  return writable('idle');
 }
 
 export async function errorData(response: Response) {
@@ -72,6 +64,11 @@ export function submit(
       return;
     }
 
+    console.dir(node);
+    if (!node.noValidate && !node.reportValidity()) {
+      return;
+    }
+
     try {
       submitting = true;
 
@@ -82,7 +79,7 @@ export function submit(
         return;
       }
 
-      status?.set(SubmitStatus.submitting);
+      status?.set('submitting');
       loading?.add(submitId);
 
       // Have to use `getAttribute` here. When the `formaction` attribute is not set, `event.submitter.formAction` will
@@ -101,9 +98,9 @@ export function submit(
       });
 
       if (response.ok) {
-        status?.set(SubmitStatus.success);
+        status?.set('success');
       } else {
-        status?.set(SubmitStatus.failed);
+        status?.set('failed');
       }
 
       onResponse?.(response, node);
@@ -135,9 +132,9 @@ export type WithStrings<O extends object> = {
 };
 
 export function formDataToJson<T extends object>(form: FormData | T): T | WithStrings<T> {
-  if (typeof (form as ReadOnlyFormData)?.entries == 'function') {
+  if (typeof (form as FormData)?.entries == 'function') {
     let output: Partial<WithStrings<T>> = {};
-    for (let [key, val] of (form as ReadOnlyFormData).entries()) {
+    for (let [key, val] of (form as FormData).entries()) {
       set(output, key, val);
     }
 

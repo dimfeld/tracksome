@@ -2,6 +2,7 @@
   import { invalidate } from '$app/navigation';
   import Button from '$lib/components/Button.svelte';
   import Checkbox from '$lib/components/Checkbox.svelte';
+  import Form from '$lib/components/Form.svelte';
   import Icon from '$lib/components/Icon.svelte';
   import { xSolid } from '$lib/components/icons';
 
@@ -26,12 +27,7 @@
       : 0;
 </script>
 
-<form
-  class="flex flex-col items-stretch space-y-4"
-  {action}
-  method="POST"
-  use:submit={{ onResponse }}
->
+<Form class="flex flex-col items-stretch space-y-4" {action} method="POST" {onResponse}>
   <input type="hidden" name="sort" value={attribute.sort} />
   <div class="flex space-x-4">
     <Labelled label="Name" class="flex-1">
@@ -75,7 +71,7 @@
     <Checkbox name="enabled" bind:value={attribute.enabled} label="Enabled" />
     <Button type="submit" class="self-end" useTrackableColors>Save</Button>
   </div>
-</form>
+</Form>
 
 {#if attribute.attribute_type === 'category' && !isNew}
   <Labelled label="Categories" class="mt-6">
@@ -83,11 +79,11 @@
       {#each Object.entries(attribute.categories || []) as [category_id, category] (category_id)}
         {@const action = `${baseUrl}/${attribute.trackable_attribute_id}/categories/${category_id}`}
         <li class="flex space-x-2 items-stretch">
-          <form
+          <Form
             class="w-full flex space-x-2"
             action="{action}?_method=PATCH"
             method="POST"
-            use:submit={{ onResponse }}
+            {onResponse}
           >
             <label class="flex-1">
               <input type="text" class="w-full" name="name" value={category.name} />
@@ -104,22 +100,16 @@
             >
             <Button type="submit" useTrackableColors>Save</Button>
             <input type="hidden" name="sort" value={category.sort} />
-          </form>
+          </Form>
         </li>
       {/each}
       <li class="w-full">
-        <form
+        <Form
           class="w-full flex space-x-2 items-center"
           action="{baseUrl}/{attribute.trackable_attribute_id}/categories"
           method="POST"
-          use:submit={{
-            onResponse: (res, form) => {
-              if (res.ok) {
-                form.reset();
-                onResponse();
-              }
-            },
-          }}
+          resetOnSuccess={true}
+          {onResponse}
         >
           <label class="flex-1">
             <input type="text" class="w-full" placeholder="New Category" name="name" />
@@ -128,7 +118,7 @@
           <input type="color" name="color" value="#808080" class="bg-transparent h-10" />
           <Button type="submit" useTrackableColors>Add</Button>
           <input type="hidden" name="sort" value={maxCategorySort + 1} />
-        </form>
+        </Form>
       </li>
     </ul>
   </Labelled>

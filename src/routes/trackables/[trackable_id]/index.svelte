@@ -64,6 +64,7 @@
   import Card from '$lib/components/Card.svelte';
   import ItemEditor from '$lib/components/ItemEditor.svelte';
   import { updateSession } from '$lib/user';
+  import Form from '$lib/components/Form.svelte';
 
   export let trackable: Trackable;
   export let attributes: TrackableAttribute[];
@@ -146,18 +147,19 @@
   </div>
 
   {#if canAddNew}
-    <form
+    <Form
       method="POST"
       action="/api/items"
       class="mt-4"
-      use:submit={{
-        onSubmit: (data) => newItemSubmit(data, canAddNew),
-        onResponse: (r) => newItemResponse(r, itemUrl($page.url, trackable.trackable_id)),
-      }}
+      onSubmit={(data) => newItemSubmit(data, canAddNew)}
+      onResponse={() => newItemResponse(itemUrl($page.url, trackable.trackable_id))}
+      let:slowLoading
     >
       <input type="hidden" name="trackable_id" value={trackable.trackable_id} />
-      <Button class="w-full" style="none" useTrackableColors={true} type="submit">Add One</Button>
-    </form>
+      <Button class="w-full" style="none" useTrackableColors={true} type="submit">
+        {#if slowLoading}Adding...{:else}Add One{/if}</Button
+      >
+    </Form>
   {/if}
 
   <ul class="mt-4 space-y-4">

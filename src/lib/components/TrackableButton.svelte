@@ -10,6 +10,7 @@
   import TrackableButtonLabel from './_TrackableButtonLabel.svelte';
   import { showTippy } from '$lib/tippy';
   import { session, page } from '$app/stores';
+  import Form from './Form.svelte';
 
   export let trackable: Trackable;
   export let items: Item[];
@@ -43,31 +44,30 @@
     <TrackableButtonLabel {trackable} {items} />
   </a>
   {#if canAddNew}
-    <form
-      class="element w-12 rounded-r-full border-l {innerBorderColor}"
-      method="POST"
-      action="/api/items"
-      use:submit={{
-        onSubmit: (data) => newItemSubmit(data, canAddNew),
-        onResponse: (r) => newItemResponse(r),
-      }}
-    >
-      <input type="hidden" name="trackable_id" value={trackable.trackable_id} />
-      <button class="w-full h-full pl-3 rounded-r-full" on:click={() => dispatch('click-plus')}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 opacity-60"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </button>
-    </form>
+    <div class="element flex items-stretch w-12 rounded-r-full border-l {innerBorderColor}">
+      <Form
+        method="POST"
+        action="/api/items"
+        onSubmit={(data) => newItemSubmit(data, canAddNew)}
+        onResponse={() => newItemResponse()}
+      >
+        <input type="hidden" name="trackable_id" value={trackable.trackable_id} />
+        <button class="w-full h-full pl-3 rounded-r-full" on:click={() => dispatch('click-plus')}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 opacity-60"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </Form>
+    </div>
   {/if}
 </div>
 

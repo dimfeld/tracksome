@@ -1,6 +1,7 @@
 <script lang="ts">
   import { submit } from '$lib/form';
   import { Item } from '$lib/items';
+  import Form from './Form.svelte';
   import { TrackableAttribute } from '$lib/trackable';
   import { formatInTimeZone } from 'date-fns-tz';
   import sorter from 'sorters';
@@ -30,10 +31,9 @@
   }
 </script>
 
-<form
+<Form
   action="/api/items/{item.item_id}?_method=PATCH"
   method="POST"
-  use:submit
   class="flex flex-col items-stretch space-y-4"
 >
   <p class="flex justify-between space-x-2">
@@ -85,4 +85,4 @@
   {/each}
   <input type="submit" class="hidden" />
   <input type="hidden" name="timezone" value={item.timezone} />
-</form>
+</Form>

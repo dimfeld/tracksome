@@ -30,12 +30,10 @@ export function newItemSubmit(data: FormData | null, canAddNew: boolean) {
   }
 }
 
-export function newItemResponse(res: Response, ...invalidateUrls: string[]) {
-  if (res.ok) {
-    invalidate(todayItemsUrl);
+export function newItemResponse(...invalidateUrls: string[]) {
+  invalidate(todayItemsUrl);
 
-    for (let url of invalidateUrls) {
-      invalidate(url);
-    }
+  for (let url of invalidateUrls) {
+    invalidate(url);
   }
 }

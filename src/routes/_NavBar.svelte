@@ -1,15 +1,22 @@
 <script lang="ts">
   import { appContext } from '$lib/context';
   import { DarkModeStore, Theme } from '$lib/styles';
+  import { stuckValueStore } from '$lib/delayed_store';
 
   export let darkModeStore: DarkModeStore;
 
   const { user, loading } = appContext();
+
+  const slowLoading = stuckValueStore(loading, true, 300);
 </script>
 
 <nav class="flex flex-row items-center p-2 bg-dgray-200">
   <a class="text-xl" href="/">TrackSome</a>
   <div class="flex items-center ml-auto">
+    {#if $slowLoading}
+      <span class="mr-4">Loading...</span>
+    {/if}
+
     <button class="text-dgray-700 w-8 h-8 grid place-items-center" title="User Settings">
       {#if $user?.avatar}
         <img src={$user.avatar} alt="{$user.name} Profile Picture" class="w-8 h-8 rounded-full" />
