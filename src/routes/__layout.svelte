@@ -2,7 +2,7 @@
   import type { Load } from '@sveltejs/kit';
   import { setSessionStateCookie, User } from '$lib/user';
 
-  export const load: Load = async function ({ fetch, url }) {
+  export const load: Load = async function ({ fetch, url, session }) {
     if (browser) {
       let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       // Record timezone offset so that server-side queries can adjust appropriately.
@@ -18,15 +18,19 @@
     }
 
     let callback: object | undefined;
-    try {
-      let callbackString = url.searchParams.get('__callback');
-      if (callbackString) {
-        callback = JSON.parse(atob(callbackString));
-      }
-    } catch (e) {}
+    if (session.returnValue) {
+      callback = session.returnValue;
+    } else {
+      try {
+        let callbackString = url.searchParams.get('__callback');
+        if (callbackString) {
+          callback = JSON.parse(atob(callbackString));
+        }
+      } catch (e) {}
+    }
 
     return {
-      stuff: { user, callback, title: ['TrackSome'] },
+      stuff: { user, callback: callback ?? {}, title: ['TrackSome'] },
       props: { user },
     };
   };

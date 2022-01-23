@@ -75,7 +75,7 @@ export const handle: Handle<TracksomeLocals<false>> = async function ({ event, r
     let redirectionTarget = event.locals.redirectTarget ?? referrer;
     let location = new URL(redirectionTarget, referrer);
     if (Object.keys(event.locals.returnValue).length > 0) {
-      location.searchParams.set('callback', btoa(JSON.stringify(event.locals.returnValue)));
+      location.searchParams.set('__callback', btoa(JSON.stringify(event.locals.returnValue)));
     }
 
     response = new Response('', {
