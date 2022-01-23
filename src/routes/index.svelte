@@ -158,7 +158,9 @@
             >
           </div>
         {/if}
-        <TrackableButton {trackable} {items} />
+        <div class="flex-1">
+          <TrackableButton {trackable} {items} />
+        </div>
       </li>
     {/each}
   </ul>

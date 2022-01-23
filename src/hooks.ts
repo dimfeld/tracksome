@@ -46,6 +46,7 @@ export const handle: Handle<TracksomeLocals<false>> = async function ({ event, r
   event.locals.defaultDarkMode = cookies.defaultDarkMode === 'true';
   event.locals.timezone = cookies.timezone || 'UTC';
   event.locals.trackableView = cookies.trackableView;
+  event.locals.returnValue = {};
 
   if (requireAuthed(event) && !event.locals.userId) {
     return new Response('Not logged in', {
@@ -59,7 +60,33 @@ export const handle: Handle<TracksomeLocals<false>> = async function ({ event, r
     });
   }
 
-  return resolve(event);
+  let response = await resolve(event);
+
+  /* Redirect non-JS form responses back to the requesting page, or to
+   * another page if something has overriden redirectTarget */
+  const referrer = event.request.headers.get('referer');
+  if (
+    event.url.pathname.startsWith('/api') &&
+    referrer &&
+    response.status < 300 &&
+    !response.headers.has('location') &&
+    event.request.headers.get('accept')?.includes('text/html')
+  ) {
+    let redirectionTarget = event.locals.redirectTarget ?? referrer;
+    let location = new URL(redirectionTarget, referrer);
+    if (Object.keys(event.locals.returnValue).length > 0) {
+      location.searchParams.set('callback', btoa(JSON.stringify(event.locals.returnValue)));
+    }
+
+    response = new Response('', {
+      status: 303,
+      headers: {
+        location: location.toString(),
+      },
+    });
+  }
+
+  return response;
 };
 
 export const getSession: GetSession<TracksomeLocals, Session> = (event) => {
@@ -69,5 +96,6 @@ export const getSession: GetSession<TracksomeLocals, Session> = (event) => {
     randomColor: randomColor(),
     timezone: event.locals.timezone,
     trackableView: event.locals.trackableView,
+    returnValue: event.locals.returnValue,
   };
 };

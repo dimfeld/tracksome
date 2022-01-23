@@ -5,6 +5,10 @@ import { LoadingStore } from './loader_status.js';
 import { RequestEvent } from '@sveltejs/kit';
 import { TracksomeLocals } from './endpoints.js';
 
+/** Add this to a form submission to make the handler redirect to another place
+ * when a non-JS form submission takes place. */
+export const FORM_REDIRECT_TARGET = '__formRedirectTarget';
+
 export interface SubmitActionOptions {
   onSubmit?: (body: FormData | null, event: SubmitEvent) => Promise<boolean> | boolean | undefined;
   onResponse?: (response: Response, form: HTMLFormElement) => void;
@@ -138,6 +142,8 @@ export function formDataToJson<T extends object>(form: FormData | T): T | WithSt
   }
 }
 
+/** Parse the form body, and place special form variables into the request
+ * locals, if any. */
 export async function parseBody<T extends object>(
   request: Request,
   locals: TracksomeLocals
@@ -146,6 +152,13 @@ export async function parseBody<T extends object>(
     case 'application/x-www-form-urlencoded':
     case 'multipart/form-data': {
       let data = await request.formData();
+
+      const redirectTarget = data.get(FORM_REDIRECT_TARGET)?.toString();
+      if (redirectTarget) {
+        data.delete(FORM_REDIRECT_TARGET);
+        locals.redirectTarget = redirectTarget;
+      }
+
       return formDataToJson<T>(data);
     }
     case 'application/json':

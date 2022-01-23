@@ -16,6 +16,7 @@ export interface Stat {
 export async function getStats({ userId, trackableId, attributeId, granularity }: GetStatsOptions) {
   const granularityGroup = `date_trunc($[granularity], items.time, items.timezone)`;
 
+  // TODO Handle categorical values
   const attributeQuery = `SELECT trackable_attribute_id as id,
         'attribute' AS type,
         COUNT(*) AS count,

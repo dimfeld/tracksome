@@ -15,6 +15,7 @@ export interface Session {
   randomColor: string;
   timezone: string;
   trackableView?: string;
+  returnValue: Record<string, unknown>;
 }
 
 export function setSessionStateCookie(key: string, value: string | number | boolean) {
