@@ -141,6 +141,7 @@
         <option value="7d" selected={currentGranularity === '7d'}>7 days</option>
         <option value="30d" selected={currentGranularity === '30d'}>30 days</option>
       </select>
+      <input type="submit" hidden />
     </form>
   </div>
 

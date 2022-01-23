@@ -9,8 +9,13 @@ import { TracksomeLocals } from './endpoints.js';
  * when a non-JS form submission takes place. */
 export const FORM_REDIRECT_TARGET = '__formRedirectTarget';
 
+export type OnSubmit = (
+  body: FormData | null,
+  event: SubmitEvent
+) => Promise<boolean> | boolean | undefined | void;
+
 export interface SubmitActionOptions {
-  onSubmit?: (body: FormData | null, event: SubmitEvent) => Promise<boolean> | boolean | undefined;
+  onSubmit?: OnSubmit;
   onResponse?: (response: Response, form: HTMLFormElement) => void;
   allowMultipleConcurrent?: boolean;
   status?: SubmitStatusStore;
