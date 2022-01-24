@@ -69,7 +69,7 @@ export function colorVars(color: d3.LabColor) {
   ].join(';');
 }
 
-export function readTrackableAttributeInput(input: WithStrings<TrackableAttribute>) {
+export function readTrackableAttributeInput(input: Partial<WithStrings<TrackableAttribute>>) {
   if (input.attribute_type === 'number' && input.constraints) {
     input.constraints = {
       min: intFromString(input.constraints.min) ?? undefined,

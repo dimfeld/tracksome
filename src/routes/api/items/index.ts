@@ -5,7 +5,7 @@ import { parseBody } from '$lib/form';
 import { DateGranularity, dateRange } from '$lib/dates';
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 
-export const get: RequestHandler<Item[]> = async ({ locals, url }) => {
+export const get: RequestHandler = async ({ locals, url }) => {
   let dateParam = url.searchParams.get('date');
   let baseDate: Date;
   if (dateParam && dateParam !== 'today') {
@@ -31,7 +31,7 @@ export const get: RequestHandler<Item[]> = async ({ locals, url }) => {
   };
 };
 
-export const post: RequestHandler<Item | null> = async ({ locals, request }) => {
+export const post: RequestHandler = async ({ locals, request }) => {
   let nowUtc = new Date().toISOString();
   let data = await parseBody<Item>(request, locals);
   if (!data) {

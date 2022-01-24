@@ -3,14 +3,14 @@ import { getAll, addTrackable } from '$lib/db/trackable';
 import { Trackable } from '$lib/trackable';
 import { checkboxToBoolean, parseBody } from '$lib/form';
 
-export const get: RequestHandler<Trackable[]> = async ({ locals }) => {
+export const get: RequestHandler = async ({ locals }) => {
   let result = await getAll(locals.userId);
   return {
     body: result,
   };
 };
 
-export const post: RequestHandler<Trackable> = async ({ locals, request }) => {
+export const post: RequestHandler = async ({ locals, request }) => {
   let data = await parseBody<Trackable>(request, locals);
   if (!data) {
     return { status: 400 };

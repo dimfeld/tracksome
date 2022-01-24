@@ -3,7 +3,7 @@ import { updateSorts } from '$lib/db/trackable';
 import { RequestHandler } from '$lib/endpoints';
 import { parseBody } from '$lib/form';
 
-export const post: RequestHandler<unknown> = async ({ request, params, locals }) => {
+export const post: RequestHandler = async ({ request, params, locals }) => {
   let input = await parseBody<{ trackable: Record<number, number> }>(request, locals);
   if (!input) {
     return { status: 400 };

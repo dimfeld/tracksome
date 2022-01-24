@@ -1,4 +1,5 @@
 import { db, partialUpdate, pgp } from '$lib/db/client';
+import { WithStrings } from '$lib/form';
 import { Trackable } from '$lib/trackable';
 
 const table = { table: 'trackables' };
@@ -51,7 +52,7 @@ export function addTrackable(
 export function partialUpdateTrackable(
   userId: number,
   trackableId: number,
-  trackable: Partial<Trackable>
+  trackable: Partial<WithStrings<Trackable>>
 ): Promise<Trackable | null> {
   let query = partialUpdate({
     columns: updateColumns,

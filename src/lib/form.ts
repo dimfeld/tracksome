@@ -64,7 +64,6 @@ export function submit(
       return;
     }
 
-    console.dir(node);
     if (!node.noValidate && !node.reportValidity()) {
       return;
     }
@@ -148,7 +147,7 @@ export function formDataToJson<T extends object>(form: FormData | T): T | WithSt
  * locals, if any. */
 export async function parseBody<T extends object>(
   request: Request,
-  locals: TracksomeLocals
+  locals: TracksomeLocals<true | false>
 ): Promise<WithStrings<T> | null> {
   switch (locals.contentType) {
     case 'application/x-www-form-urlencoded':

@@ -1,5 +1,6 @@
 import { db, partialUpdate, pgp } from '$lib/db/client';
-import { Trackable, TrackableAttribute, TrackableAttributeCategory } from '$lib/trackable';
+import { WithStrings } from '$lib/form';
+import { TrackableAttribute } from '$lib/trackable';
 
 const baseColumns = new pgp.helpers.ColumnSet(
   [
@@ -71,7 +72,7 @@ export function partialUpdateTrackable(options: {
   userId: number;
   trackableId: number;
   trackableAttributeId: number;
-  attribute: Partial<TrackableAttribute>;
+  attribute: Partial<WithStrings<TrackableAttribute>>;
 }) {
   let query = partialUpdate({
     columns: updateColumns,

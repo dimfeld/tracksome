@@ -17,7 +17,9 @@ export type TracksomeLocals<Authed extends boolean = true> = {
   redirectTarget?: string;
 };
 
-type TracksomeRequestHandler = RequestHandler<TracksomeLocals>;
+type TracksomeRequestHandler<Authed extends boolean = true> = RequestHandler<
+  TracksomeLocals<Authed>
+>;
 export type { TracksomeRequestHandler as RequestHandler };
 
 export function parseNumber(value: number | string | null): number | undefined {

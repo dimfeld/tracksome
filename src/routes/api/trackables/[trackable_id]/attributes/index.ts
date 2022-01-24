@@ -3,7 +3,7 @@ import { RequestHandler } from '$lib/endpoints';
 import { parseBody } from '$lib/form';
 import { TrackableAttribute, readTrackableAttributeInput } from '$lib/trackable';
 
-export const get: RequestHandler<TrackableAttribute[]> = async ({ params, locals }) => {
+export const get: RequestHandler = async ({ params, locals }) => {
   let attributes = await trackableAttributesDb.getTrackableAttributes({
     userId: locals.userId,
     trackableId: +params.trackable_id,
@@ -14,7 +14,7 @@ export const get: RequestHandler<TrackableAttribute[]> = async ({ params, locals
   };
 };
 
-export const post: RequestHandler<TrackableAttribute> = async ({ request, params, locals }) => {
+export const post: RequestHandler = async ({ request, params, locals }) => {
   let body = await parseBody<TrackableAttribute>(request, locals);
   if (!body) {
     return { status: 400 };

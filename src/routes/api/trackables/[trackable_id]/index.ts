@@ -8,7 +8,7 @@ import {
 } from '$lib/db/trackable';
 import { Trackable } from '$lib/trackable';
 
-export const get: RequestHandler<Trackable> = async ({ locals, params }) => {
+export const get: RequestHandler = async ({ locals, params }) => {
   let result = await getTrackable({ userId: locals.userId, trackableId: +params.trackable_id });
   if (result) {
     return {
@@ -16,12 +16,12 @@ export const get: RequestHandler<Trackable> = async ({ locals, params }) => {
     };
   } else {
     return {
-      status: 404,
+      fallthrough: true,
     };
   }
 };
 
-export const put: RequestHandler<Trackable> = async ({ locals, request, params }) => {
+export const put: RequestHandler = async ({ locals, request, params }) => {
   let data = await parseBody<Trackable>(request, locals);
   if (!data) {
     return { status: 400 };
@@ -39,15 +39,15 @@ export const put: RequestHandler<Trackable> = async ({ locals, request, params }
     };
   } else {
     return {
-      status: 404,
+      fallthrough: true,
     };
   }
 };
 
-export const patch: RequestHandler<Trackable | null> = async ({ locals, request, params }) => {
+export const patch: RequestHandler = async ({ locals, request, params }) => {
   let data = await parseBody<Partial<Trackable>>(request, locals);
   if (!data) {
-    return { status: 400 };
+    return { status: 400, body: '' };
   }
 
   let result = await partialUpdateTrackable(locals.userId, +params.trackable_id, data);
@@ -58,12 +58,12 @@ export const patch: RequestHandler<Trackable | null> = async ({ locals, request,
     };
   } else {
     return {
-      status: 404,
+      fallthrough: true,
     };
   }
 };
 
-export const del: RequestHandler<object> = async ({ locals, params }) => {
+export const del: RequestHandler = async ({ locals, params }) => {
   await deleteTrackable({ userId: locals.userId, trackableId: +params.trackable_id });
   return {
     body: {},
