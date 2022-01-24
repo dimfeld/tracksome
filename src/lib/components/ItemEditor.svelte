@@ -41,7 +41,7 @@
   <p class="flex justify-between items-stretch space-x-2">
     <input
       type="datetime-local"
-      name="date"
+      name="time"
       value={formatInTimeZone(item.time, item.timezone, `yyyy-MM-dd'T'HH:mm`)}
     />
     <Button type="submit" class="w-20" useTrackableColors>

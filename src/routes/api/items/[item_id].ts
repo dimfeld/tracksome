@@ -6,15 +6,13 @@ import { zonedTimeToUtc } from 'date-fns-tz';
 import { parse as parseDate } from 'date-fns';
 
 export const patch: RequestHandler = async ({ locals, params, request }) => {
-  let input = await parseBody<Partial<Item & { date: string }>>(request, locals);
-  if (!input) {
+  let item = await parseBody<Partial<Item>>(request, locals);
+  if (!item) {
     return { status: 400 };
   }
 
-  let { date, ...item } = input;
-
-  if (date && item.time && item.timezone) {
-    let newTime = parseDate(`${date} ${item.time}`, 'yyyy-MM-dd HH:mm', new Date());
+  if (item.time && item.timezone) {
+    let newTime = parseDate(item.time, `yyyy-MM-dd'T'HH:mm`, new Date());
     item.time = zonedTimeToUtc(newTime, item.timezone).toISOString();
   }
 
