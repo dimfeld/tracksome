@@ -1,0 +1,50 @@
+<script>
+  import { View } from 'svench';
+  import CalendarHeatmap from './CalendarHeatmap.svelte';
+  import { subDays } from 'date-fns';
+  import { timeDays } from 'd3';
+
+  function generateDaysData(numDays) {
+    const now = new Date();
+    const dates = timeDays(subDays(now, numDays), now, 1);
+
+    /** @type import('$lib/items').Item[] */
+    const items = dates.map((date, i) => {
+      return {
+        item_id: i,
+        trackable_id: 0,
+        time: date.toISOString(),
+        timezone: '',
+        added: '',
+        modified: '',
+        attributes: {
+          1: {
+            numeric_value: Math.round(Math.random() * 5),
+          },
+        },
+        note: '',
+      };
+    });
+
+    return items;
+  }
+</script>
+
+<View
+  name="default"
+  knobs={{
+    days: 30,
+    weeks: 4,
+    color: 'green',
+  }}
+  let:knobs={{ days, color, weeks }}
+>
+  <div class="w-32 h-32">
+    <CalendarHeatmap
+      data={generateDaysData(days)}
+      {color}
+      {weeks}
+      score={(item) => item.attributes['1']?.numeric_value ?? 0}
+    />
+  </div>
+</View>

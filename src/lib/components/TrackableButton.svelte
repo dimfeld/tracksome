@@ -1,11 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { contrastingColor } from '$lib/colors';
-  import { submit } from '$lib/form';
   import * as d3 from 'd3';
-  import { goto, invalidate } from '$app/navigation';
   import { Trackable, colorVars, trackableUrl } from '$lib/trackable';
-  import { desktopScreen } from '$lib/styles';
   import { Item, newItemSubmit, newItemResponse } from '$lib/items';
   import TrackableButtonLabel from './_TrackableButtonLabel.svelte';
   import { showTippy } from '$lib/tippy';
