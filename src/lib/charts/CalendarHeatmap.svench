@@ -39,12 +39,13 @@
   }}
   let:knobs={{ days, color, weeks }}
 >
-  <div class="w-32 h-32">
+  <div class="h-32">
     <CalendarHeatmap
       data={generateDaysData(days)}
       {color}
       {weeks}
       score={(item) => item.attributes['1']?.numeric_value ?? 0}
+      label={(item) => `${item.key}: ${item.score}`}
     />
   </div>
 </View>
