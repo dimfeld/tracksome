@@ -55,22 +55,16 @@ export function submit(
     allowMultipleConcurrent = false,
   }: SubmitActionOptions = {}
 ) {
-  let submitting = false;
+  let abortController: AbortController | null = null;
   const submitId = `form-submission-${submitLoaderId++}`;
   const handler = async (event: SubmitEvent) => {
     event.preventDefault();
-
-    if (submitting && !allowMultipleConcurrent) {
-      return;
-    }
 
     if (!node.noValidate && !node.reportValidity()) {
       return;
     }
 
     try {
-      submitting = true;
-
       const body = node.method === 'post' || node.method === 'put' ? new FormData(node) : null;
 
       let ok = onSubmit ? (await onSubmit(body, event)) ?? true : true;
@@ -81,30 +75,40 @@ export function submit(
       status?.set('submitting');
       loading?.add(submitId);
 
+      if (!allowMultipleConcurrent) {
+        abortController?.abort();
+        abortController = new AbortController();
+      }
+
       // Have to use `getAttribute` here. When the `formaction` attribute is not set, `event.submitter.formAction` will
       // return the current document's URL instead of the form's action if it isn't overridden, but we want it to return
       // nothing and use the form's action instead.
       const action =
         (event.submitter as HTMLButtonElement)?.getAttribute('formaction') ?? node.action;
 
-      const response = await fetch(action, {
-        method: node.method,
-        body,
-        redirect: 'manual',
-        headers: {
-          accept: 'application/json',
-        },
-      });
+      try {
+        const response = await fetch(action, {
+          method: node.method,
+          body,
+          redirect: 'manual',
+          signal: abortController?.signal,
+          headers: {
+            accept: 'application/json',
+          },
+        });
+        if (response.ok) {
+          status?.set('success');
+        } else {
+          status?.set('failed');
+        }
 
-      if (response.ok) {
-        status?.set('success');
-      } else {
-        status?.set('failed');
+        onResponse?.(response, node);
+      } catch (e: unknown) {
+        if ((e as Error).name !== 'AbortError') {
+          status?.set('failed');
+        }
       }
-
-      onResponse?.(response, node);
     } finally {
-      submitting = false;
       loading?.delete(submitId);
     }
   };
@@ -118,8 +122,8 @@ export function submit(
   };
 }
 
-export function fromForm(request: Request) {
-  return request.headers.get('accept')?.includes('application/json');
+export function fromForm(request: Request): boolean {
+  return request.headers.get('accept')?.includes('text/html') ?? false;
 }
 
 export type WithStrings<O extends object> = {
@@ -130,7 +134,9 @@ export type WithStrings<O extends object> = {
     : string | O[K];
 };
 
-export function formDataToJson<T extends object>(form: FormData | T): T | WithStrings<T> {
+/** Convert a FormData to an object, creating nested objects from dotted paths. This
+ * function does not attempt to do any type coercion, so all the leaf values will be strings. */
+export function formDataToJson<T extends object>(form: FormData | T): WithStrings<T> {
   if (typeof (form as FormData)?.entries == 'function') {
     let output: Partial<WithStrings<T>> = {};
     for (let [key, val] of (form as FormData).entries()) {
