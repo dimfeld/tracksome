@@ -1,12 +1,12 @@
 <script>
   import { View } from 'svench';
   import CalendarHeatmap from './CalendarHeatmap.svelte';
-  import { subDays } from 'date-fns';
+  import { addDays, subDays } from 'date-fns';
   import { timeDays } from 'd3';
 
   function generateDaysData(numDays) {
     const now = new Date();
-    const dates = timeDays(subDays(now, numDays), now, 1);
+    const dates = timeDays(subDays(now, numDays), addDays(now, 1), 1);
 
     /** @type import('$lib/items').Item[] */
     const items = dates.map((date, i) => {

@@ -11,7 +11,14 @@
 
 <script lang="ts">
   import { Html, LayerCake } from 'layercake';
-  import { format as formatDate, startOfDay, subDays } from 'date-fns';
+  import {
+    differenceInCalendarDays,
+    endOfWeek,
+    format as formatDate,
+    isAfter,
+    startOfDay,
+    subDays,
+  } from 'date-fns';
   import { zonedTimeToUtc } from 'date-fns-tz';
   import { group, range } from 'd3';
   import BoxGridHtml from './parts/BoxGridHtml.svelte';
@@ -41,8 +48,10 @@
 
   $: boxData = group(items, (item) => item.key);
 
-  $: boxes = range(0, weeks * 7, 1).map((dayDelta) => {
-    let itemDate = subDays(new Date(), dayDelta);
+  const now = new Date();
+  $: endOfWeekDays = differenceInCalendarDays(endOfWeek(now), now) + 1;
+  $: boxes = range(weeks * 7 - endOfWeekDays, -endOfWeekDays, -1).map((dayDelta) => {
+    let itemDate = subDays(now, dayDelta);
     let day = Math.round(startOfDay(itemDate).valueOf() / 86400000);
     let key = formatDate(itemDate, 'yyyy-MM-dd');
     let data = boxData.get(key) ?? [];
@@ -56,6 +65,8 @@
     };
   });
 
+  $: console.log(boxes);
+
   let mouseEvent: CustomEvent<{ e: MouseEvent; score: number; data: ProcessedData<Data> }> | null =
     null;
 </script>
@@ -65,6 +76,7 @@
     <BoxGridHtml
       {orientation}
       {gap}
+      placeholder={(box) => isAfter(box.itemDate, now)}
       on:mousemove={(e) => (mouseEvent = e)}
       on:mouseout={() => (mouseEvent = null)}
     />
