@@ -9,15 +9,6 @@ export interface User {
   avatar: string;
 }
 
-export interface Session {
-  theme: Theme;
-  defaultDarkMode: boolean;
-  randomColor: string;
-  timezone: string;
-  trackableView?: string;
-  returnValue: Record<string, unknown>;
-}
-
 export function setSessionStateCookie(key: string, value: string | number | boolean) {
   if (browser) {
     value = encodeURIComponent(value);

@@ -1,7 +1,6 @@
 import set from 'just-safe-set';
 import { Writable, writable } from 'svelte/store';
 import { LoadingStore } from './loader_status.js';
-import { TracksomeLocals } from './endpoints.js';
 
 /** Add this to a form submission to make the handler redirect to another place
  * when a non-JS form submission takes place. */
@@ -153,7 +152,7 @@ export function formDataToJson<T extends object>(form: FormData | T): WithString
  * locals, if any. */
 export async function parseBody<T extends object>(
   request: Request,
-  locals: TracksomeLocals<true | false>
+  locals: App.Locals
 ): Promise<WithStrings<T> | null> {
   switch (locals.contentType) {
     case 'application/x-www-form-urlencoded':

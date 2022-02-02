@@ -1,5 +1,4 @@
 import { db, pgp, skipIfAbsent } from './client';
-import { TracksomeLocals } from '$lib/endpoints';
 import { User } from '../user';
 
 export interface UserCreateOptions {
@@ -55,7 +54,7 @@ export async function get(userId: string): Promise<User> {
   return user;
 }
 
-export function mustBeLoggedIn(locals: TracksomeLocals) {
+export function mustBeLoggedIn(locals: App.Locals) {
   if (!locals.userId) {
     throw new Error('Not logged in');
   }

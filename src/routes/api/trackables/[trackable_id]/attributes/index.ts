@@ -1,6 +1,6 @@
 import * as trackableAttributesDb from '$lib/db/trackable_attribute';
-import { RequestHandler } from '$lib/endpoints';
 import { parseBody } from '$lib/form';
+import { RequestHandler } from '@sveltejs/kit';
 import { TrackableAttribute, readTrackableAttributeInput } from '$lib/trackable';
 
 export const get: RequestHandler = async ({ params, locals }) => {

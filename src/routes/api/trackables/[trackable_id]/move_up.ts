@@ -1,6 +1,6 @@
 import { reorder } from '$lib/db/reorder';
 import { updateSorts } from '$lib/db/trackable';
-import { RequestHandler } from '$lib/endpoints';
+import { RequestHandler } from '@sveltejs/kit';
 import { parseBody } from '$lib/form';
 
 export const post: RequestHandler = async ({ request, params, locals }) => {

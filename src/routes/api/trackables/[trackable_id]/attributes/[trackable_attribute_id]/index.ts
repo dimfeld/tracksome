@@ -1,5 +1,5 @@
 import * as trackableAttributesDb from '$lib/db/trackable_attribute';
-import { RequestHandler } from '$lib/endpoints';
+import { RequestHandler } from '@sveltejs/kit';
 import { parseBody } from '$lib/form';
 import { TrackableAttribute, readTrackableAttributeInput } from '$lib/trackable';
 

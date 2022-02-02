@@ -1,7 +1,7 @@
-import { RequestHandler } from '$lib/endpoints';
 import { getAll, addTrackable } from '$lib/db/trackable';
 import { Trackable } from '$lib/trackable';
 import { checkboxToBoolean, parseBody } from '$lib/form';
+import { RequestHandler } from '@sveltejs/kit';
 
 export const get: RequestHandler = async ({ locals }) => {
   let result = await getAll(locals.userId);

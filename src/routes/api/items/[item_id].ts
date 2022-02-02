@@ -1,9 +1,9 @@
-import { RequestHandler } from '$lib/endpoints';
 import * as itemDb from '$lib/db/items';
 import { parseBody } from '$lib/form';
 import { Item } from '$lib/items';
 import { zonedTimeToUtc } from 'date-fns-tz';
 import { parse as parseDate } from 'date-fns';
+import { RequestHandler } from '@sveltejs/kit';
 
 export const patch: RequestHandler = async ({ locals, params, request }) => {
   let item = await parseBody<Partial<Item>>(request, locals);

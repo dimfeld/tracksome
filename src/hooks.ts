@@ -3,9 +3,7 @@ import * as session from '$lib/db/session';
 import { Handle } from '@sveltejs/kit';
 import { GetSession, RequestEvent } from '@sveltejs/kit/types/hooks';
 import { randomColor } from '$lib/colors';
-import { TracksomeLocals } from '$lib/endpoints';
 import { Theme } from '$lib/styles';
-import { Session } from '$lib/user';
 
 function requireAuthed(event: RequestEvent) {
   let path = event.url.pathname;
@@ -16,7 +14,7 @@ function requireAuthed(event: RequestEvent) {
 
 /** Return true if this request doesn't present CSRF concerns. False if it appears to be
  * a CSRF or is from an old browser (IE11) that doesn't send the proper headers. */
-function csrfCheck({ request, locals, url }: RequestEvent<TracksomeLocals<false>>): boolean {
+function csrfCheck({ request, locals, url }: RequestEvent): boolean {
   if (request.method === 'GET' || request.method === 'HEAD') {
     return true;
   }
@@ -36,7 +34,7 @@ function csrfCheck({ request, locals, url }: RequestEvent<TracksomeLocals<false>
   return originUrl.origin === url.origin;
 }
 
-export const handle: Handle<TracksomeLocals<false>> = async function ({ event, resolve }) {
+export const handle: Handle = async function ({ event, resolve }) {
   let contentType = event.request.headers.get('content-type')?.split(';')[0]?.toLowerCase() ?? '';
   let cookies = cookie.parse(event.request.headers.get('cookie') || '');
 
@@ -89,7 +87,7 @@ export const handle: Handle<TracksomeLocals<false>> = async function ({ event, r
   return response;
 };
 
-export const getSession: GetSession<TracksomeLocals, Session> = (event) => {
+export const getSession: GetSession = (event) => {
   return {
     theme: event.locals.theme,
     defaultDarkMode: event.locals.defaultDarkMode,

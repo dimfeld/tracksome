@@ -2,7 +2,7 @@ import {
   deleteAttributeCategory,
   updateAttributeCategory,
 } from '$lib/db/trackable_attribute_category';
-import { RequestHandler } from '$lib/endpoints';
+import { RequestHandler } from '@sveltejs/kit';
 import { parseBody } from '$lib/form';
 import { TrackableAttributeCategory } from '$lib/trackable';
 

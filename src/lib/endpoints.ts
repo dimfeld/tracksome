@@ -1,26 +1,4 @@
-import type { RequestHandler } from '@sveltejs/kit';
-import { Theme } from './styles';
 import Accepts from 'accepts';
-
-export type TracksomeLocals<Authed extends boolean = true> = {
-  contentType: string;
-  userId: Authed extends true ? number : number | null;
-  theme: Theme;
-  defaultDarkMode: boolean;
-  timezone: string;
-  trackableView?: string;
-  referrer: string | null;
-  /** Used to return data from endpoints back to the page */
-  returnValue: Record<string, unknown>;
-  /** Used to override the default redirect target when redirecting a non-JS
-   * form submission */
-  redirectTarget?: string;
-};
-
-type TracksomeRequestHandler<Authed extends boolean = true> = RequestHandler<
-  TracksomeLocals<Authed>
->;
-export type { TracksomeRequestHandler as RequestHandler };
 
 export function parseNumber(value: number | string | null): number | undefined {
   if (typeof value !== 'string') {
